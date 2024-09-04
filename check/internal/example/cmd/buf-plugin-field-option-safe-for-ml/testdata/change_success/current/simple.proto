@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package simple;
+
+import "acme/option/v1/option.proto";
+
+message User {
+  string name = 1 [(acme.option.v1.safe_for_ml) = true];
+  string age = 2 [(acme.option.v1.safe_for_ml) = true];
+}

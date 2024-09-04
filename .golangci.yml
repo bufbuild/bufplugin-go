@@ -1,0 +1,103 @@
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+  forbidigo:
+    forbid:
+      - '^fmt\.Print'
+      - '^log\.'
+      - '^print$'
+      - '^println$'
+      - '^panic$'
+  godox:
+    # TODO, OPT, etc. comments are fine to commit. Use FIXME comments for
+    # temporary hacks, and use godox to prevent committing them.
+    keywords: [FIXME]
+  varnamelen:
+    ignore-decls:
+      - T any
+      - i int
+      - wg sync.WaitGroup
+      - id string
+linters:
+  enable-all: true
+  disable:
+    - cyclop            # covered by gocyclo
+    - depguard          # unnecessary for small libraries
+    - err113            # way too noisy
+    - exhaustruct       # many exceptions
+    - funlen            # rely on code review to limit function length
+    - gochecknoglobals  # many exceptions
+    - gocognit          # dubious "cognitive overhead" quantification
+    - gofumpt           # prefer standard gofmt
+    - goimports         # rely on gci instead
+    - gomnd             # some unnamed constants are okay
+    - inamedparam       # not standard style
+    - interfacebloat    # many exceptions
+    - ireturn           # "accept interfaces, return structs" isn't ironclad
+    - lll               # don't want hard limits for line length
+    - maintidx          # covered by gocyclo
+    - nlreturn          # generous whitespace violates house style
+    - testifylint       # does not want us to use assert
+    - testpackage       # internal tests are fine
+    - thelper           # we want to print out the whole stack
+    - wrapcheck         # don't _always_ need to wrap errors
+    - wsl               # generous whitespace violates house style
+issues:
+  exclude-dirs-use-default: false
+  exclude-rules:
+    - linters:
+        - revive
+      path: check/client.go
+      test: "CheckCallOption"
+    - linters:
+        - revive
+      path: check/check_service_handler.go
+      test: "CheckServiceHandlerOption"
+    - linters:
+        - exhaustive
+      path: check/options.go
+      text: "reflect.Pointer|reflect.Ptr"
+    - linters:
+        - gocritic
+      path: check/file.go
+      text: "commentFormatting"
+    - linters:
+        - gocritic
+      path: check/location.go
+      text: "commentFormatting"
+    - linters:
+        - nilnil
+      path: check/rule.go
+    - linters:
+        - nilnil
+      path: check/response_writer.go
+    - linters:
+        - unparam
+      path: check/category_spec.go
+    - linters:
+        - unparam
+      path: check/annotation.go
+    - linters:
+        - unparam
+      path: check/response.go
+    - linters:
+        - nilnil
+      path: check/checktest/checktest.go
+    - linters:
+        - varnamelen
+      path: check/internal/example
+    - linters:
+        - dupl
+      path: check/checkutil/breaking.go
+    - linters:
+        - varnamelen
+      path: check/checkutil/breaking.go
+    - linters:
+        - varnamelen
+      path: check/checkutil/lint.go
+    - linters:
+        - varnamelen
+      path: check/checkutil/util.go
+    - linters:
+        - varnamelen
+      path: internal/pkg/xslices/xslices.go

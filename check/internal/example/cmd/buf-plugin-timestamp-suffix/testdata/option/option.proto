@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package option;
+
+import "google/protobuf/timestamp.proto";
+
+message Foo {
+  google.protobuf.Timestamp valid_timestamp = 1;
+  google.protobuf.Timestamp invalid_time = 2;
+}
