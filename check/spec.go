@@ -17,7 +17,7 @@ package check
 import (
 	"context"
 
-	"github.com/bufbuild/bufplugin-go/internal/pkg/xslices"
+	"buf.build/go/bufplugin/internal/pkg/xslices"
 )
 
 // Spec is the spec for a plugin.

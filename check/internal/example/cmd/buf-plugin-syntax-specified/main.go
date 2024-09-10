@@ -34,8 +34,8 @@ package main
 import (
 	"context"
 
-	"github.com/bufbuild/bufplugin-go/check"
-	"github.com/bufbuild/bufplugin-go/check/checkutil"
+	"buf.build/go/bufplugin/check"
+	"buf.build/go/bufplugin/check/checkutil"
 )
 
 // syntaxSpecifiedRuleID is the Rule ID of the syntax specified Rule.

@@ -2,11 +2,15 @@ bufplugin-go
 ==============
 
 [![Build](https://github.com/bufbuild/bufplugin-go/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/bufbuild/bufplugin-go/actions/workflows/ci.yaml)
-[![Report Card](https://goreportcard.com/badge/github.com/bufbuild/bufplugin-go)](https://goreportcard.com/report/github.com/bufbuild/bufplugin-go)
-[![GoDoc](https://pkg.go.dev/badge/github.com/bufbuild/bufplugin-go.svg)](https://pkg.go.dev/github.com/bufbuild/bufplugin-go)
+[![Report Card](https://goreportcard.com/badge/buf.build/go/bufplugin)](https://goreportcard.com/report/buf.build/go/bufplugin)
+[![GoDoc](https://pkg.go.dev/badge/buf.build/go/bufplugin.svg)](https://pkg.go.dev/buf.build/go/bufplugin)
 [![Slack](https://img.shields.io/badge/slack-buf-%23e01563)](https://buf.build/links/slack)
 
 This is the Golang SDK for [bufplugin](https://github.com/bufbuild/bufplugin).
+
+```go
+import "buf.build/go/bufplugin/check"
+```
 
 This is very early, but see the [example](check/internal/example) for how this works in practice.
 

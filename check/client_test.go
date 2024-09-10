@@ -20,7 +20,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/bufbuild/bufplugin-go/internal/pkg/xslices"
+	"buf.build/go/bufplugin/internal/pkg/xslices"
 	"github.com/stretchr/testify/require"
 )
 

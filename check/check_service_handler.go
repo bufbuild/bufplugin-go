@@ -20,9 +20,9 @@ import (
 	"slices"
 
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
-	"github.com/bufbuild/bufplugin-go/internal/gen/buf/plugin/check/v1/v1pluginrpc"
-	"github.com/bufbuild/bufplugin-go/internal/pkg/thread"
-	"github.com/bufbuild/bufplugin-go/internal/pkg/xslices"
+	"buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
+	"buf.build/go/bufplugin/internal/pkg/thread"
+	"buf.build/go/bufplugin/internal/pkg/xslices"
 	"github.com/bufbuild/protovalidate-go"
 	"pluginrpc.com/pluginrpc"
 )

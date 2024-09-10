@@ -53,9 +53,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bufbuild/bufplugin-go/check"
-	"github.com/bufbuild/bufplugin-go/check/checkutil"
-	optionv1 "github.com/bufbuild/bufplugin-go/check/internal/example/gen/acme/option/v1"
+	"buf.build/go/bufplugin/check"
+	"buf.build/go/bufplugin/check/checkutil"
+	optionv1 "buf.build/go/bufplugin/check/internal/example/gen/acme/option/v1"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"

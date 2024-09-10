@@ -20,7 +20,7 @@ import (
 	"regexp"
 	"sort"
 
-	"github.com/bufbuild/bufplugin-go/internal/pkg/xslices"
+	"buf.build/go/bufplugin/internal/pkg/xslices"
 )
 
 const (

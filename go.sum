@@ -1,5 +1,3 @@
-buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.34.2-20240904175752-5f2ce91228e8.2 h1:EuphpPzJKitRQFq4KtGm0ie55KQhMYeG6QLQeNWMfWk=
-buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.34.2-20240904175752-5f2ce91228e8.2/go.mod h1:B+9TKHRYqoAUW57pLjhkLOnBCu0DQYMV+f7imQ9nXwI=
 buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.34.2-20240904181154-a0be11449112.2 h1:X9qBPcvWGOJs/CeRVLoxxLJwC/eKyWDS/G4nj+3KGMY=
 buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.34.2-20240904181154-a0be11449112.2/go.mod h1:B+9TKHRYqoAUW57pLjhkLOnBCu0DQYMV+f7imQ9nXwI=
 buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240717164558-a6c49f84cc0f.2 h1:SZRVx928rbYZ6hEKUIN+vtGDkl7uotABRWGY4OAg5gM=
@@ -62,5 +60,5 @@ gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15/go.mod h1:Co6ibVJAznAaIkqp8
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
-pluginrpc.com/pluginrpc v0.2.0 h1:mUuxA2Vtt1/buDsnR1HscuAu56Y/3ax5oPPy+9q/Zr4=
-pluginrpc.com/pluginrpc v0.2.0/go.mod h1:rX3qwV56YEwfayfyfEovbQ+KMVDjgJ8icHy0WTaUXRY=
+pluginrpc.com/pluginrpc v0.3.0 h1:9BSGRIdNLf/+EU3JrkISLwgIAuYxBrMEzSfNyeQ/Gp0=
+pluginrpc.com/pluginrpc v0.3.0/go.mod h1:UNWZ941hcVAoOZUn8YZsMmOZBzbUjQa3XMns8RQLp9o=

@@ -17,7 +17,7 @@ package check
 import (
 	"sort"
 
-	"github.com/bufbuild/bufplugin-go/internal/pkg/xslices"
+	"buf.build/go/bufplugin/internal/pkg/xslices"
 )
 
 // CategorySpec is the spec for a Category.

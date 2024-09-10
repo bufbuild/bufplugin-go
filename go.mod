@@ -1,4 +1,4 @@
-module github.com/bufbuild/bufplugin-go
+module buf.build/go/bufplugin
 
 go 1.21
 
@@ -10,7 +10,7 @@ require (
 	github.com/bufbuild/protovalidate-go v0.6.5
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/protobuf v1.34.2
-	pluginrpc.com/pluginrpc v0.2.0
+	pluginrpc.com/pluginrpc v0.3.0
 )
 
 require (

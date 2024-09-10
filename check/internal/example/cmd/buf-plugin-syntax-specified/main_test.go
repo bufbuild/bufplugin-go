@@ -17,7 +17,7 @@ package main
 import (
 	"testing"
 
-	"github.com/bufbuild/bufplugin-go/check/checktest"
+	"buf.build/go/bufplugin/check/checktest"
 )
 
 func TestSpec(t *testing.T) {

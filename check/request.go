@@ -19,7 +19,7 @@ import (
 	"sort"
 
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
-	"github.com/bufbuild/bufplugin-go/internal/pkg/xslices"
+	"buf.build/go/bufplugin/internal/pkg/xslices"
 )
 
 const checkRuleIDPageSize = 250

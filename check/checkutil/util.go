@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/bufbuild/bufplugin-go/check"
-	"github.com/bufbuild/bufplugin-go/internal/pkg/xslices"
+	"buf.build/go/bufplugin/check"
+	"buf.build/go/bufplugin/internal/pkg/xslices"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 

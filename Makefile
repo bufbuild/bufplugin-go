@@ -18,7 +18,7 @@ GOLANGCI_LINT_VERSION := v1.60.1
 # https://github.com/golangci/golangci-lint/issues/4837
 GOLANGCI_LINT_GOTOOLCHAIN := $(GO_MOD_GOTOOLCHAIN)
 # Remove when we want to upgrade past Go 1.21
-GO_GET_PKGS := github.com/antlr4-go/antlr/v4@v4.13.0
+GO_GET_PKGS := github.com/antlr4-go/antlr/v4@v4.13.0 golang.org/x/exp@v0.0.0-20240823005443-9b4947da3948
 
 .PHONY: help
 help: ## Describe useful make targets

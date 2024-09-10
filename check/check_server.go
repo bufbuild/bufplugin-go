@@ -15,7 +15,7 @@
 package check
 
 import (
-	"github.com/bufbuild/bufplugin-go/internal/gen/buf/plugin/check/v1/v1pluginrpc"
+	"buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
 	"pluginrpc.com/pluginrpc"
 )
 

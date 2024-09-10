@@ -19,9 +19,9 @@ import (
 	"fmt"
 
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
-	"github.com/bufbuild/bufplugin-go/internal/gen/buf/plugin/check/v1/v1pluginrpc"
-	"github.com/bufbuild/bufplugin-go/internal/pkg/cache"
-	"github.com/bufbuild/bufplugin-go/internal/pkg/xslices"
+	"buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
+	"buf.build/go/bufplugin/internal/pkg/cache"
+	"buf.build/go/bufplugin/internal/pkg/xslices"
 	"pluginrpc.com/pluginrpc"
 )
 
