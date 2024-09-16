@@ -5,7 +5,7 @@
 [![GoDoc](https://pkg.go.dev/badge/buf.build/go/bufplugin.svg)](https://pkg.go.dev/buf.build/go/bufplugin)
 [![Slack](https://img.shields.io/badge/slack-buf-%23e01563)](https://buf.build/links/slack)
 
-This is the Golang SDK for the [Bufplugin](https://github.com/bufbuild/bufplugin) framework.
+This is the Go SDK for the [Bufplugin](https://github.com/bufbuild/bufplugin) framework.
 `bufplugin-go` currently provides the [check](https://pkg.go.dev/buf.build/go/bufplugin/check),
 [checkutil](https://pkg.go.dev/buf.build/go/bufplugin/check/checkutil), and
 [checktest](https://pkg.go.dev/buf.build/go/bufplugin/check/checktest) packages to make it simple to
