@@ -12,7 +12,7 @@ This is the Go SDK for the [Bufplugin](https://github.com/bufbuild/bufplugin) fr
 author _and_ test custom lint and breaking change plugins. It wraps the `bufplugin` API with
 [pluginrpc-go](https://github.com/pluginrpc/pluginrpc-go) in easy-to-use interfaces and concepts
 that organize around the standard
-[protoreflect](https://pkg.go.dev/google.golang.org/protobuf/reflect/protoreflect) API that powers
+[protoreflect](https://pkg.go.dev/google.golang.org/protobuf@v1.34.2/reflect/protoreflect) API that powers
 most of the Go Protobuf ecosystem. `bufplugin-go` is also the framework that the Buf team uses to
 author all of the builtin lint and breaking change rules within the
 [Buf CLI](https://github.com/bufbuild/buf) - we've made sure that `bufplugin-go` is powerful enough
