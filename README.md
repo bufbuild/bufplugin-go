@@ -12,19 +12,21 @@ This is the Go SDK for the [Bufplugin](https://github.com/bufbuild/bufplugin) fr
 author _and_ test custom lint and breaking change plugins. It wraps the `bufplugin` API with
 [pluginrpc-go](https://github.com/pluginrpc/pluginrpc-go) in easy-to-use interfaces and concepts
 that organize around the standard
-[protoreflect](https://pkg.go.dev/google.golang.org/protobuf/reflect/protoreflect) API.
-`bufplugin-go` is also the framework that the Buf team uses to author all of the builtin lint and
-breaking change rules within the [Buf CLI](https://github.com/bufbuild/buf) - we've made sure that
-`bufplugin-go` is powerful enough to represent the most complex lint and breaking change rules while
-keeping it as simple as possible for you to use. If you want to author a lint or breaking change
-plugin today, you should use `bufplugin-go`.
+[protoreflect](https://pkg.go.dev/google.golang.org/protobuf/reflect/protoreflect) API that powers
+most of the Go Protobuf ecosystem. `bufplugin-go` is also the framework that the Buf team uses to
+author all of the builtin lint and breaking change rules within the
+[Buf CLI](https://github.com/bufbuild/buf) - we've made sure that `bufplugin-go` is powerful enough
+to represent the most complex lint and breaking change rules while keeping it as simple as possible
+for you to use. If you want to author a lint or breaking change plugin today, you should use
+`bufplugin-go`.
 
 ## Use
 
-A plugin is just a binary on your system that the Buf CLI knows how to call. Once you've installed a
-plugin, simply add a reference to it and its rules within your `buf.yaml`. For example, if you've
-installed the [buf-plugin-timestamp-suffix](check/internal/example/cmd/buf-plugin-timestamp-suffix)
-example plugin on your `$PATH`:
+A plugin is just a binary on your system that implements the
+[Bufplugin API](https://buf.build/bufbuild/bufplugin). Once you've installed a plugin, simply add a
+reference to it and its rules within your `buf.yaml`. For example, if you've installed the
+[buf-plugin-timestamp-suffix](check/internal/example/cmd/buf-plugin-timestamp-suffix) example plugin
+on your `$PATH`:
 
 ```yaml
 version: v2
@@ -37,6 +39,9 @@ plugins:
     options:
       timestamp_suffix: _timestamp # set to the suffix you'd like to enforce
 ```
+
+All configuration that can be used for builtin rules can be used for rules exposed by plugins; the
+`use, except, ignore, ignore_only` keys work just as you'd expect.
 
 Plugins can be named whatever you'd like them to be, however we'd recommend following the convention
 of prefixing your binary names with `buf-plugin-` for clarity.
