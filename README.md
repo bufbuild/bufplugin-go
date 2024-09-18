@@ -12,9 +12,9 @@ This is the Go SDK for the [Bufplugin](https://github.com/bufbuild/bufplugin) fr
 author _and_ test custom lint and breaking change plugins. It wraps the `bufplugin` API with
 [pluginrpc-go](https://github.com/pluginrpc/pluginrpc-go) in easy-to-use interfaces and concepts
 that organize around the standard
-[protoreflect](https://pkg.go.dev/google.golang.org/protobuf@v1.34.2/reflect/protoreflect) API that powers
-most of the Go Protobuf ecosystem. `bufplugin-go` is also the framework that the Buf team uses to
-author all of the builtin lint and breaking change rules within the
+[protoreflect](https://pkg.go.dev/google.golang.org/protobuf@v1.34.2/reflect/protoreflect) API that
+powers most of the Go Protobuf ecosystem. `bufplugin-go` is also the framework that the Buf team
+uses to author all of the builtin lint and breaking change rules within the
 [Buf CLI](https://github.com/bufbuild/buf) - we've made sure that `bufplugin-go` is powerful enough
 to represent the most complex lint and breaking change rules while keeping it as simple as possible
 for you to use. If you want to author a lint or breaking change plugin today, you should use
@@ -32,19 +32,41 @@ on your `$PATH`:
 version: v2
 lint:
   use:
-    - STANDARD # omit if you do not want to use the rules builtin to buf
     - TIMESTAMP_SUFFIX
 plugins:
   - plugin: buf-plugin-timestamp-suffix
     options:
-      timestamp_suffix: _timestamp # set to the suffix you'd like to enforce
+      timestamp_suffix: _time # set to the suffix you'd like to enforce
 ```
 
-All configuration that can be used for builtin rules can be used for rules exposed by plugins; the
-`use, except, ignore, ignore_only` keys work just as you'd expect.
+All [configuration](https://buf.build/docs/configuration/v2/buf-yaml) works as you'd expect: you can
+continue to configure `use`, `except`, `ignore`, `ignore_only` and use `// buf:lint:ignore` comment
+ignores, just as you would for the builtin rules.
 
 Plugins can be named whatever you'd like them to be, however we'd recommend following the convention
 of prefixing your binary names with `buf-plugin-` for clarity.
+
+Given the following file:
+
+```protobuf
+# foo.proto
+syntax = "proto3";
+
+package foo;
+
+import "google/protobuf/timestamp.proto";
+
+message Foo {
+  google.protobuf.Timestamp start = 1;
+  google.protobuf.Timestamp end_time = 2;
+}
+```
+
+The following error will be returned from `buf lint`:
+
+```
+foo.proto:8:3:Fields of type google.protobuf.Timestamp must end in "_time" but field name was "start". (buf-plugin-timestamp-suffix)
+```
 
 ## Examples
 
