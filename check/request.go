@@ -15,10 +15,12 @@
 package check
 
 import (
+	"fmt"
 	"slices"
 	"sort"
 
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
+	"buf.build/go/bufplugin/descriptor"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
 )
 
@@ -26,18 +28,20 @@ const checkRuleIDPageSize = 250
 
 // Request is a request to a plugin to run checks.
 type Request interface {
-	// Files contains the files to check.
+	// FileDescriptors contains the FileDescriptors to check.
 	//
 	// Will never be nil or empty.
 	//
-	// Files are guaranteed to be unique with respect to their file name
-	Files() []File
-	// AgainstFiles contains the files to check against, in the case of breaking change plugins.
+	// FileDescriptors are guaranteed to be unique with respect to their name.
+	FileDescriptors() []descriptor.FileDescriptor
+	// AgainstFileDescriptors contains the FileDescriptors to check against, in the
+	// case of breaking change plugins.
 	//
-	// May be empty, including in the case where we did actually specify against files.
+	// May be empty, including in the case where we did actually specify against
+	// FileDescriptors.
 	//
-	// Files are guaranteed to be unique with respect to their file name
-	AgainstFiles() []File
+	// FileDescriptors are guaranteed to be unique with respect to their name.
+	AgainstFileDescriptors() []descriptor.FileDescriptor
 	// Options contains any options passed to the plugin.
 	//
 	// Will never be nil, but may have no values.
@@ -63,24 +67,24 @@ type Request interface {
 	isRequest()
 }
 
-// NewRequest returns a new Request for the given Files.
+// NewRequest returns a new Request for the given FileDescriptors.
 //
-// Files are always required. To set against Files or options, use
-// WithAgainstFiles and WithOption.
+// FileDescriptors are always required. To set against FileDescriptors or options, use
+// WithAgainstFileDescriptors and WithOption.
 func NewRequest(
-	files []File,
+	fileDescriptors []descriptor.FileDescriptor,
 	options ...RequestOption,
 ) (Request, error) {
-	return newRequest(files, options...)
+	return newRequest(fileDescriptors, options...)
 }
 
 // RequestOption is an option for a new Request.
 type RequestOption func(*requestOptions)
 
-// WithAgainstFiles adds the given against Files to the Request.
-func WithAgainstFiles(againstFiles []File) RequestOption {
+// WithAgainstFileDescriptors adds the given against FileDescriptors to the Request.
+func WithAgainstFileDescriptors(againstFileDescriptors []descriptor.FileDescriptor) RequestOption {
 	return func(requestOptions *requestOptions) {
-		requestOptions.againstFiles = againstFiles
+		requestOptions.againstFileDescriptors = againstFileDescriptors
 	}
 }
 
@@ -103,11 +107,11 @@ func WithRuleIDs(ruleIDs ...string) RequestOption {
 
 // RequestForProtoRequest returns a new Request for the given checkv1.Request.
 func RequestForProtoRequest(protoRequest *checkv1.CheckRequest) (Request, error) {
-	files, err := FilesForProtoFiles(protoRequest.GetFiles())
+	fileDescriptors, err := descriptor.FileDescriptorsForProtoFileDescriptors(protoRequest.GetFiles())
 	if err != nil {
 		return nil, err
 	}
-	againstFiles, err := FilesForProtoFiles(protoRequest.GetAgainstFiles())
+	againstFileDescriptors, err := descriptor.FileDescriptorsForProtoFileDescriptors(protoRequest.GetAgainstFiles())
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +120,8 @@ func RequestForProtoRequest(protoRequest *checkv1.CheckRequest) (Request, error)
 		return nil, err
 	}
 	return NewRequest(
-		files,
-		WithAgainstFiles(againstFiles),
+		fileDescriptors,
+		WithAgainstFileDescriptors(againstFileDescriptors),
 		WithOptions(options),
 		WithRuleIDs(protoRequest.GetRuleIds()...),
 	)
@@ -126,14 +130,14 @@ func RequestForProtoRequest(protoRequest *checkv1.CheckRequest) (Request, error)
 // *** PRIVATE ***
 
 type request struct {
-	files        []File
-	againstFiles []File
-	options      Options
-	ruleIDs      []string
+	fileDescriptors        []descriptor.FileDescriptor
+	againstFileDescriptors []descriptor.FileDescriptor
+	options                Options
+	ruleIDs                []string
 }
 
 func newRequest(
-	files []File,
+	fileDescriptors []descriptor.FileDescriptor,
 	options ...RequestOption,
 ) (*request, error) {
 	requestOptions := newRequestOptions()
@@ -147,26 +151,26 @@ func newRequest(
 		return nil, err
 	}
 	sort.Strings(requestOptions.ruleIDs)
-	if err := validateFiles(files); err != nil {
+	if err := validateFileDescriptors(fileDescriptors); err != nil {
 		return nil, err
 	}
-	if err := validateFiles(requestOptions.againstFiles); err != nil {
+	if err := validateFileDescriptors(requestOptions.againstFileDescriptors); err != nil {
 		return nil, err
 	}
 	return &request{
-		files:        files,
-		againstFiles: requestOptions.againstFiles,
-		options:      requestOptions.options,
-		ruleIDs:      requestOptions.ruleIDs,
+		fileDescriptors:        fileDescriptors,
+		againstFileDescriptors: requestOptions.againstFileDescriptors,
+		options:                requestOptions.options,
+		ruleIDs:                requestOptions.ruleIDs,
 	}, nil
 }
 
-func (r *request) Files() []File {
-	return slices.Clone(r.files)
+func (r *request) FileDescriptors() []descriptor.FileDescriptor {
+	return slices.Clone(r.fileDescriptors)
 }
 
-func (r *request) AgainstFiles() []File {
-	return slices.Clone(r.againstFiles)
+func (r *request) AgainstFileDescriptors() []descriptor.FileDescriptor {
+	return slices.Clone(r.againstFileDescriptors)
 }
 
 func (r *request) Options() Options {
@@ -181,8 +185,8 @@ func (r *request) toProtos() ([]*checkv1.CheckRequest, error) {
 	if r == nil {
 		return nil, nil
 	}
-	protoFiles := xslices.Map(r.files, File.toProto)
-	protoAgainstFiles := xslices.Map(r.againstFiles, File.toProto)
+	protoFileDescriptors := xslices.Map(r.fileDescriptors, descriptor.FileDescriptor.ToProto)
+	protoAgainstFileDescriptors := xslices.Map(r.againstFileDescriptors, descriptor.FileDescriptor.ToProto)
 	protoOptions, err := r.options.toProto()
 	if err != nil {
 		return nil, err
@@ -190,8 +194,8 @@ func (r *request) toProtos() ([]*checkv1.CheckRequest, error) {
 	if len(r.ruleIDs) == 0 {
 		return []*checkv1.CheckRequest{
 			{
-				Files:        protoFiles,
-				AgainstFiles: protoAgainstFiles,
+				Files:        protoFileDescriptors,
+				AgainstFiles: protoAgainstFileDescriptors,
 				Options:      protoOptions,
 			},
 		}, nil
@@ -206,8 +210,8 @@ func (r *request) toProtos() ([]*checkv1.CheckRequest, error) {
 		checkRequests = append(
 			checkRequests,
 			&checkv1.CheckRequest{
-				Files:        protoFiles,
-				AgainstFiles: protoAgainstFiles,
+				Files:        protoFileDescriptors,
+				AgainstFiles: protoAgainstFileDescriptors,
 				Options:      protoOptions,
 				RuleIds:      r.ruleIDs[start:end],
 			},
@@ -218,10 +222,27 @@ func (r *request) toProtos() ([]*checkv1.CheckRequest, error) {
 
 func (*request) isRequest() {}
 
+func validateFileDescriptors(fileDescriptors []descriptor.FileDescriptor) error {
+	_, err := fileNameToFileDescriptorForFileDescriptors(fileDescriptors)
+	return err
+}
+
+func fileNameToFileDescriptorForFileDescriptors(fileDescriptors []descriptor.FileDescriptor) (map[string]descriptor.FileDescriptor, error) {
+	fileNameToFileDescriptor := make(map[string]descriptor.FileDescriptor, len(fileDescriptors))
+	for _, fileDescriptor := range fileDescriptors {
+		fileName := fileDescriptor.Protoreflect().Path()
+		if _, ok := fileNameToFileDescriptor[fileName]; ok {
+			return nil, fmt.Errorf("duplicate file name: %q", fileName)
+		}
+		fileNameToFileDescriptor[fileName] = fileDescriptor
+	}
+	return fileNameToFileDescriptor, nil
+}
+
 type requestOptions struct {
-	againstFiles []File
-	options      Options
-	ruleIDs      []string
+	againstFileDescriptors []descriptor.FileDescriptor
+	options                Options
+	ruleIDs                []string
 }
 
 func newRequestOptions() *requestOptions {

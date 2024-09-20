@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package check
+package descriptor
 
 import (
 	"slices"
@@ -21,15 +21,15 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-// Location is a reference to a File or to a location within a File.
+// FileLocation is a reference to a FileDescriptor or to a location within a FileDescriptor.
 //
-// A Location always has a file name.
-type Location interface {
-	// File is the File associated with the Location.
+// A FileLocation always has a file name.
+type FileLocation interface {
+	// FileDescriptor is the FileDescriptor associated with the FileLocation.
 	//
 	// Always present.
-	File() File
-	// SourcePath returns the path within the FileDescriptorProto of the Location.
+	FileDescriptor() FileDescriptor
+	// SourcePath returns the path within the FileDescriptorProto of the FileLocation.
 	SourcePath() protoreflect.SourcePath
 
 	// StartLine returns the zero-indexed start line, if known.
@@ -46,83 +46,84 @@ type Location interface {
 	TrailingComments() string
 	// LeadingDetachedComments returns any leading detached comments, if known.
 	LeadingDetachedComments() []string
+	// ToProto converts the FileLocation to its Protobuf representation.
+	ToProto() *checkv1.Location
 
 	unclonedSourcePath() protoreflect.SourcePath
 	unclonedLeadingDetachedComments() []string
-	toProto() *checkv1.Location
 
-	isLocation()
+	isFileLocation()
 }
 
 // *** PRIVATE ***
 
-type location struct {
-	file           File
+type fileLocation struct {
+	fileDescriptor FileDescriptor
 	sourceLocation protoreflect.SourceLocation
 }
 
-func newLocation(
-	file File,
+func newFileLocation(
+	fileDescriptor FileDescriptor,
 	sourceLocation protoreflect.SourceLocation,
-) *location {
-	return &location{
-		file:           file,
+) *fileLocation {
+	return &fileLocation{
+		fileDescriptor: fileDescriptor,
 		sourceLocation: sourceLocation,
 	}
 }
 
-func (l *location) File() File {
-	return l.file
+func (l *fileLocation) FileDescriptor() FileDescriptor {
+	return l.fileDescriptor
 }
 
-func (l *location) SourcePath() protoreflect.SourcePath {
+func (l *fileLocation) SourcePath() protoreflect.SourcePath {
 	return slices.Clone(l.sourceLocation.Path)
 }
 
-func (l *location) StartLine() int {
+func (l *fileLocation) StartLine() int {
 	return l.sourceLocation.StartLine
 }
 
-func (l *location) StartColumn() int {
+func (l *fileLocation) StartColumn() int {
 	return l.sourceLocation.StartColumn
 }
 
-func (l *location) EndLine() int {
+func (l *fileLocation) EndLine() int {
 	return l.sourceLocation.EndLine
 }
 
-func (l *location) EndColumn() int {
+func (l *fileLocation) EndColumn() int {
 	return l.sourceLocation.EndColumn
 }
 
-func (l *location) LeadingComments() string {
+func (l *fileLocation) LeadingComments() string {
 	return l.sourceLocation.LeadingComments
 }
 
-func (l *location) TrailingComments() string {
+func (l *fileLocation) TrailingComments() string {
 	return l.sourceLocation.TrailingComments
 }
 
-func (l *location) LeadingDetachedComments() []string {
+func (l *fileLocation) LeadingDetachedComments() []string {
 	return slices.Clone(l.sourceLocation.LeadingDetachedComments)
 }
 
-func (l *location) unclonedSourcePath() protoreflect.SourcePath {
-	return l.sourceLocation.Path
-}
-
-func (l *location) unclonedLeadingDetachedComments() []string {
-	return l.sourceLocation.LeadingDetachedComments
-}
-
-func (l *location) toProto() *checkv1.Location {
+func (l *fileLocation) ToProto() *checkv1.Location {
 	if l == nil {
 		return nil
 	}
 	return &checkv1.Location{
-		FileName:   l.file.FileDescriptor().Path(),
+		FileName:   l.fileDescriptor.Protoreflect().Path(),
 		SourcePath: l.sourceLocation.Path,
 	}
 }
 
-func (*location) isLocation() {}
+func (l *fileLocation) unclonedSourcePath() protoreflect.SourcePath {
+	return l.sourceLocation.Path
+}
+
+func (l *fileLocation) unclonedLeadingDetachedComments() []string {
+	return l.sourceLocation.LeadingDetachedComments
+}
+
+func (*fileLocation) isFileLocation() {}

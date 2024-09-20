@@ -19,13 +19,14 @@ import (
 	"sort"
 
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
+	"buf.build/go/bufplugin/descriptor"
 )
 
 // Annotation represents a rule Failure.
 //
 // An annotation always contains the ID of the Rule that failed. It also optionally
 // contains a user-readable message, a location of the failure, and a location of the
-// failure in the against Files.
+// failure in the against FileDescriptors.
 //
 // Annotations are created on the server-side via ResponseWriters, and returned
 // from Clients on Responses.
@@ -36,12 +37,12 @@ type Annotation interface {
 	RuleID() string
 	// Message is a user-readable message describing the failure.
 	Message() string
-	// Location is the location of the failure.
-	Location() Location
-	// AgainstLocation is the Location of the failure in the against Files.
+	// FileLocation is the location of the failure.
+	FileLocation() descriptor.FileLocation
+	// AgainstFileLocation is the FileLocation of the failure in the against FileDescriptors.
 	//
 	// Will only potentially be produced for breaking change rules.
-	AgainstLocation() Location
+	AgainstFileLocation() descriptor.FileLocation
 
 	toProto() *checkv1.Annotation
 
@@ -51,26 +52,26 @@ type Annotation interface {
 // *** PRIVATE ***
 
 type annotation struct {
-	ruleID          string
-	message         string
-	location        Location
-	againstLocation Location
+	ruleID              string
+	message             string
+	fileLocation        descriptor.FileLocation
+	againstFileLocation descriptor.FileLocation
 }
 
 func newAnnotation(
 	ruleID string,
 	message string,
-	location Location,
-	againstLocation Location,
+	fileLocation descriptor.FileLocation,
+	againstFileLocation descriptor.FileLocation,
 ) (*annotation, error) {
 	if ruleID == "" {
 		return nil, errors.New("check.Annotation: RuleID is empty")
 	}
 	return &annotation{
-		ruleID:          ruleID,
-		message:         message,
-		location:        location,
-		againstLocation: againstLocation,
+		ruleID:              ruleID,
+		message:             message,
+		fileLocation:        fileLocation,
+		againstFileLocation: againstFileLocation,
 	}, nil
 }
 
@@ -82,31 +83,31 @@ func (a *annotation) Message() string {
 	return a.message
 }
 
-func (a *annotation) Location() Location {
-	return a.location
+func (a *annotation) FileLocation() descriptor.FileLocation {
+	return a.fileLocation
 }
 
-func (a *annotation) AgainstLocation() Location {
-	return a.againstLocation
+func (a *annotation) AgainstFileLocation() descriptor.FileLocation {
+	return a.againstFileLocation
 }
 
 func (a *annotation) toProto() *checkv1.Annotation {
 	if a == nil {
 		return nil
 	}
-	var protoLocation *checkv1.Location
-	if a.location != nil {
-		protoLocation = a.location.toProto()
+	var protoFileLocation *checkv1.Location
+	if a.fileLocation != nil {
+		protoFileLocation = a.fileLocation.ToProto()
 	}
-	var protoAgainstLocation *checkv1.Location
-	if a.againstLocation != nil {
-		protoAgainstLocation = a.againstLocation.toProto()
+	var protoAgainstFileLocation *checkv1.Location
+	if a.againstFileLocation != nil {
+		protoAgainstFileLocation = a.againstFileLocation.ToProto()
 	}
 	return &checkv1.Annotation{
 		RuleId:          a.RuleID(),
 		Message:         a.Message(),
-		Location:        protoLocation,
-		AgainstLocation: protoAgainstLocation,
+		Location:        protoFileLocation,
+		AgainstLocation: protoAgainstFileLocation,
 	}
 }
 
