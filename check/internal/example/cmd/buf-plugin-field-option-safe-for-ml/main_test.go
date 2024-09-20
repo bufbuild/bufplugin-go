@@ -65,7 +65,7 @@ func TestSimpleFailure(t *testing.T) {
 		ExpectedAnnotations: []checktest.ExpectedAnnotation{
 			{
 				RuleID: fieldOptionSafeForMLSetRuleID,
-				Location: &checktest.ExpectedLocation{
+				FileLocation: &checktest.ExpectedFileLocation{
 					FileName:    "simple.proto",
 					StartLine:   8,
 					StartColumn: 2,
@@ -137,14 +137,14 @@ func TestChangeFailure(t *testing.T) {
 		ExpectedAnnotations: []checktest.ExpectedAnnotation{
 			{
 				RuleID: fieldOptionSafeForMLStaysTrueRuleID,
-				Location: &checktest.ExpectedLocation{
+				FileLocation: &checktest.ExpectedFileLocation{
 					FileName:    "simple.proto",
 					StartLine:   8,
 					StartColumn: 2,
 					EndLine:     8,
 					EndColumn:   56,
 				},
-				AgainstLocation: &checktest.ExpectedLocation{
+				AgainstFileLocation: &checktest.ExpectedFileLocation{
 					FileName:    "simple.proto",
 					StartLine:   8,
 					StartColumn: 2,

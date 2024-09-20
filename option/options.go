@@ -21,17 +21,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package check
+package option
 
 import (
 	"errors"
 	"fmt"
 	"reflect"
 
-	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
+	optionv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/option/v1"
 )
 
-var emptyOptions = newOptionsNoValidate(nil)
+// EmptyOptions is an instance of Options with no keys.
+var EmptyOptions = newOptionsNoValidate(nil)
 
 // Options are key/values that can control the behavior of a RuleHandler,
 // and can control the value of the Purpose string of the Rule.
@@ -67,7 +68,8 @@ type Options interface {
 	// The range order is not deterministic.
 	Range(f func(key string, value any))
 
-	toProto() ([]*checkv1.Option, error)
+	// ToProto converts the Options to its Protobuf representation.
+	ToProto() ([]*optionv1.Option, error)
 
 	isOption()
 }
@@ -80,8 +82,8 @@ func NewOptions(keyToValue map[string]any) (Options, error) {
 	return newOptionsNoValidate(keyToValue), nil
 }
 
-// OptionsForProtoOptions returns a new Options for the given checkv1.Options.
-func OptionsForProtoOptions(protoOptions []*checkv1.Option) (Options, error) {
+// OptionsForProtoOptions returns a new Options for the given optionv1.Options.
+func OptionsForProtoOptions(protoOptions []*optionv1.Option) (Options, error) {
 	keyToValue := make(map[string]any, len(protoOptions))
 	for _, protoOption := range protoOptions {
 		value, err := protoValueToValue(protoOption.GetValue())
@@ -239,11 +241,11 @@ func (o *options) Range(f func(key string, value any)) {
 	}
 }
 
-func (o *options) toProto() ([]*checkv1.Option, error) {
+func (o *options) ToProto() ([]*optionv1.Option, error) {
 	if o == nil {
 		return nil, nil
 	}
-	protoOptions := make([]*checkv1.Option, 0, len(o.keyToValue))
+	protoOptions := make([]*optionv1.Option, 0, len(o.keyToValue))
 	for key, value := range o.keyToValue {
 		protoValue, err := valueToProtoValue(value)
 		if err != nil {
@@ -252,7 +254,7 @@ func (o *options) toProto() ([]*checkv1.Option, error) {
 		// Assuming that we've validated that no values are empty.
 		protoOptions = append(
 			protoOptions,
-			&checkv1.Option{
+			&optionv1.Option{
 				Key:   key,
 				Value: protoValue,
 			},
@@ -264,41 +266,41 @@ func (o *options) toProto() ([]*checkv1.Option, error) {
 func (*options) isOption() {}
 
 // You can assume that value is a valid value.
-func valueToProtoValue(value any) (*checkv1.Value, error) {
+func valueToProtoValue(value any) (*optionv1.Value, error) {
 	switch reflectValue := reflect.ValueOf(value); reflectValue.Kind() {
 	case reflect.Bool:
-		return &checkv1.Value{
-			Type: &checkv1.Value_BoolValue{
+		return &optionv1.Value{
+			Type: &optionv1.Value_BoolValue{
 				BoolValue: reflectValue.Bool(),
 			},
 		}, nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return &checkv1.Value{
-			Type: &checkv1.Value_Int64Value{
+		return &optionv1.Value{
+			Type: &optionv1.Value_Int64Value{
 				Int64Value: reflectValue.Int(),
 			},
 		}, nil
 	case reflect.Float32, reflect.Float64:
-		return &checkv1.Value{
-			Type: &checkv1.Value_DoubleValue{
+		return &optionv1.Value{
+			Type: &optionv1.Value_DoubleValue{
 				DoubleValue: reflectValue.Float(),
 			},
 		}, nil
 	case reflect.String:
-		return &checkv1.Value{
-			Type: &checkv1.Value_StringValue{
+		return &optionv1.Value{
+			Type: &optionv1.Value_StringValue{
 				StringValue: reflectValue.String(),
 			},
 		}, nil
 	case reflect.Slice:
 		if t, ok := value.([]byte); ok {
-			return &checkv1.Value{
-				Type: &checkv1.Value_BytesValue{
+			return &optionv1.Value{
+				Type: &optionv1.Value_BytesValue{
 					BytesValue: t,
 				},
 			}, nil
 		}
-		values := make([]*checkv1.Value, reflectValue.Len())
+		values := make([]*optionv1.Value, reflectValue.Len())
 		for i := 0; i < reflectValue.Len(); i++ {
 			subValue, err := valueToProtoValue(reflectValue.Index(i).Interface())
 			if err != nil {
@@ -306,9 +308,9 @@ func valueToProtoValue(value any) (*checkv1.Value, error) {
 			}
 			values[i] = subValue
 		}
-		return &checkv1.Value{
-			Type: &checkv1.Value_ListValue{
-				ListValue: &checkv1.ListValue{
+		return &optionv1.Value{
+			Type: &optionv1.Value_ListValue{
+				ListValue: &optionv1.ListValue{
 					Values: values,
 				},
 			},
@@ -320,9 +322,9 @@ func valueToProtoValue(value any) (*checkv1.Value, error) {
 	}
 }
 
-func protoValueToValue(protoValue *checkv1.Value) (any, error) {
+func protoValueToValue(protoValue *optionv1.Value) (any, error) {
 	if protoValue == nil {
-		return nil, errors.New("invalid checkv1.Value: value cannot be nil")
+		return nil, errors.New("invalid optionv1.Value: value cannot be nil")
 	}
 	switch {
 	case protoValue.GetBoolValue():
@@ -339,7 +341,7 @@ func protoValueToValue(protoValue *checkv1.Value) (any, error) {
 		protoListValue := protoValue.GetListValue()
 		protoListValues := protoListValue.GetValues()
 		if len(protoListValues) == 0 {
-			return nil, errors.New("invalid checkv1.Value: list_values had no values")
+			return nil, errors.New("invalid optionv1.Value: list_values had no values")
 		}
 		anySlice := make([]any, len(protoListValue.GetValues()))
 		for i, protoSubValue := range protoListValues {
@@ -354,7 +356,7 @@ func protoValueToValue(protoValue *checkv1.Value) (any, error) {
 		for i := 1; i < len(anySlice); i++ {
 			anySliceSubType := reflect.TypeOf(anySlice[i])
 			if anySliceFirstType != anySliceSubType {
-				return nil, fmt.Errorf("invalid checkv1.Value: list_values must have values of the same type but detected types %v and %v", anySliceFirstType, anySliceSubType)
+				return nil, fmt.Errorf("invalid optionv1.Value: list_values must have values of the same type but detected types %v and %v", anySliceFirstType, anySliceSubType)
 			}
 		}
 		reflectSlice := reflect.MakeSlice(reflect.SliceOf(anySliceFirstType), 0, len(anySlice))
@@ -363,7 +365,7 @@ func protoValueToValue(protoValue *checkv1.Value) (any, error) {
 		}
 		return reflectSlice.Interface(), nil
 	default:
-		return nil, errors.New("invalid checkv1.Value: no value of oneof is set")
+		return nil, errors.New("invalid optionv1.Value: no value of oneof is set")
 	}
 }
 

@@ -47,6 +47,7 @@ import (
 
 	"buf.build/go/bufplugin/check"
 	"buf.build/go/bufplugin/check/checkutil"
+	"buf.build/go/bufplugin/option"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -89,7 +90,7 @@ func checkTimestampSuffix(
 	fieldDescriptor protoreflect.FieldDescriptor,
 ) error {
 	timestampSuffix := defaultTimestampSuffix
-	timestampSuffixOptionValue, err := check.GetStringValue(request.Options(), timestampSuffixOptionKey)
+	timestampSuffixOptionValue, err := option.GetStringValue(request.Options(), timestampSuffixOptionKey)
 	if err != nil {
 		return err
 	}

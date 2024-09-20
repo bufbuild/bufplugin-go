@@ -12,29 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package check
+package descriptor
 
 import (
 	"fmt"
 	"slices"
 
-	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
+	descriptorv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/descriptor/v1"
 	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
-// File is an invidual file that should be checked.
+// FileDescriptor is a protoreflect.FileDescriptor with additional properties.
 //
-// Both the protoreflect FileDescriptor and the raw FileDescriptorProto interacves
+// The raw FileDescriptorProto is also provided from this interface.
 // are provided.
-//
-// Files also have the property of being imports or non-imports.
-type File interface {
-	// FileDescriptor returns the protoreflect FileDescriptor representing this File.
+type FileDescriptor interface {
+	// ProtoreflectFileDescriptor returns the protoreflect.FileDescriptor representing this FileDescriptor.
 	//
 	// This will always contain SourceCodeInfo.
-	FileDescriptor() protoreflect.FileDescriptor
+	ProtoreflectFileDescriptor() protoreflect.FileDescriptor
+
 	// FileDescriptorProto returns the FileDescriptorProto representing this File.
 	//
 	// This is not a copy - do not modify!
@@ -65,27 +64,28 @@ type File interface {
 	// This matches the shape of the PublicDependency and WeakDependency fields.
 	UnusedDependencyIndexes() []int32
 
-	toProto() *checkv1.File
+	// ToProto converts the FileDescriptor to its Protobuf representation.
+	ToProto() *descriptorv1.FileDescriptor
 
-	isFile()
+	isFileDescriptor()
 }
 
-// FilesForProtoFiles returns a new slice of Files for the given checkv1.Files.
-func FilesForProtoFiles(protoFiles []*checkv1.File) ([]File, error) {
-	if len(protoFiles) == 0 {
+// FileDescriptorsForProtoFileDescriptors returns a new slice of FileDescriptors for the given descriptorv1.FileDescriptorDescriptors.
+func FileDescriptorsForProtoFileDescriptors(protoFileDescriptors []*descriptorv1.FileDescriptor) ([]FileDescriptor, error) {
+	if len(protoFileDescriptors) == 0 {
 		return nil, nil
 	}
-	fileNameToProtoFile := make(map[string]*checkv1.File, len(protoFiles))
-	fileDescriptorProtos := make([]*descriptorpb.FileDescriptorProto, len(protoFiles))
-	for i, protoFile := range protoFiles {
-		fileDescriptorProto := protoFile.GetFileDescriptorProto()
+	fileNameToProtoFileDescriptor := make(map[string]*descriptorv1.FileDescriptor, len(protoFileDescriptors))
+	fileDescriptorProtos := make([]*descriptorpb.FileDescriptorProto, len(protoFileDescriptors))
+	for i, protoFileDescriptor := range protoFileDescriptors {
+		fileDescriptorProto := protoFileDescriptor.GetFileDescriptorProto()
 		fileName := fileDescriptorProto.GetName()
-		if _, ok := fileNameToProtoFile[fileName]; ok {
+		if _, ok := fileNameToProtoFileDescriptor[fileName]; ok {
 			//  This should have been validated via protovalidate.
 			return nil, fmt.Errorf("duplicate file name: %q", fileName)
 		}
 		fileDescriptorProtos[i] = fileDescriptorProto
-		fileNameToProtoFile[fileName] = protoFile
+		fileNameToProtoFileDescriptor[fileName] = protoFileDescriptor
 	}
 
 	protoregistryFiles, err := protodesc.NewFiles(
@@ -97,24 +97,24 @@ func FilesForProtoFiles(protoFiles []*checkv1.File) ([]File, error) {
 		return nil, err
 	}
 
-	files := make([]File, 0, len(protoFiles))
+	fileDescriptors := make([]FileDescriptor, 0, len(protoFileDescriptors))
 	protoregistryFiles.RangeFiles(
-		func(fileDescriptor protoreflect.FileDescriptor) bool {
-			protoFile, ok := fileNameToProtoFile[fileDescriptor.Path()]
+		func(protoreflectFileDescriptor protoreflect.FileDescriptor) bool {
+			protoFileDescriptor, ok := fileNameToProtoFileDescriptor[protoreflectFileDescriptor.Path()]
 			if !ok {
 				// If the protoreflect API is sane, this should never happen.
 				// However, the protoreflect API is not sane.
-				err = fmt.Errorf("unknown file: %q", fileDescriptor.Path())
+				err = fmt.Errorf("unknown file: %q", protoreflectFileDescriptor.Path())
 				return false
 			}
-			files = append(
-				files,
-				newFile(
-					fileDescriptor,
-					protoFile.GetFileDescriptorProto(),
-					protoFile.GetIsImport(),
-					protoFile.GetIsSyntaxUnspecified(),
-					protoFile.GetUnusedDependency(),
+			fileDescriptors = append(
+				fileDescriptors,
+				newFileDescriptor(
+					protoreflectFileDescriptor,
+					protoFileDescriptor.GetFileDescriptorProto(),
+					protoFileDescriptor.GetIsImport(),
+					protoFileDescriptor.GetIsSyntaxUnspecified(),
+					protoFileDescriptor.GetUnusedDependency(),
 				),
 			)
 			return true
@@ -123,62 +123,65 @@ func FilesForProtoFiles(protoFiles []*checkv1.File) ([]File, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(files) != len(protoFiles) {
+	if len(fileDescriptors) != len(protoFileDescriptors) {
 		// If the protoreflect API is sane, this should never happen.
 		// However, the protoreflect API is not sane.
-		return nil, fmt.Errorf("expected %d files from protoregistry, got %d", len(protoFiles), len(files))
+		return nil, fmt.Errorf("expected %d files from protoregistry, got %d", len(protoFileDescriptors), len(fileDescriptors))
 	}
-	return files, nil
+	return fileDescriptors, nil
 }
 
 // *** PRIVATE ***
 
-type file struct {
-	fileDescriptor          protoreflect.FileDescriptor
-	fileDescriptorProto     *descriptorpb.FileDescriptorProto
-	isImport                bool
-	isSyntaxUnspecified     bool
-	unusedDependencyIndexes []int32
+type fileDescriptor struct {
+	protoreflectFileDescriptor protoreflect.FileDescriptor
+	fileDescriptorProto        *descriptorpb.FileDescriptorProto
+	isImport                   bool
+	isSyntaxUnspecified        bool
+	unusedDependencyIndexes    []int32
 }
 
-func newFile(
-	fileDescriptor protoreflect.FileDescriptor,
+func newFileDescriptor(
+	protoreflectFileDescriptor protoreflect.FileDescriptor,
 	fileDescriptorProto *descriptorpb.FileDescriptorProto,
 	isImport bool,
 	isSyntaxUnspecified bool,
 	unusedDependencyIndexes []int32,
-) *file {
-	return &file{
-		fileDescriptor:          fileDescriptor,
-		fileDescriptorProto:     fileDescriptorProto,
-		isImport:                isImport,
-		isSyntaxUnspecified:     isSyntaxUnspecified,
-		unusedDependencyIndexes: unusedDependencyIndexes,
+) *fileDescriptor {
+	return &fileDescriptor{
+		protoreflectFileDescriptor: protoreflectFileDescriptor,
+		fileDescriptorProto:        fileDescriptorProto,
+		isImport:                   isImport,
+		isSyntaxUnspecified:        isSyntaxUnspecified,
+		unusedDependencyIndexes:    unusedDependencyIndexes,
 	}
 }
 
-func (f *file) FileDescriptor() protoreflect.FileDescriptor {
-	return f.fileDescriptor
+func (f *fileDescriptor) ProtoreflectFileDescriptor() protoreflect.FileDescriptor {
+	return f.protoreflectFileDescriptor
 }
 
-func (f *file) FileDescriptorProto() *descriptorpb.FileDescriptorProto {
+func (f *fileDescriptor) FileDescriptorProto() *descriptorpb.FileDescriptorProto {
 	return f.fileDescriptorProto
 }
 
-func (f *file) IsImport() bool {
+func (f *fileDescriptor) IsImport() bool {
 	return f.isImport
 }
 
-func (f *file) IsSyntaxUnspecified() bool {
+func (f *fileDescriptor) IsSyntaxUnspecified() bool {
 	return f.isSyntaxUnspecified
 }
 
-func (f *file) UnusedDependencyIndexes() []int32 {
+func (f *fileDescriptor) UnusedDependencyIndexes() []int32 {
 	return slices.Clone(f.unusedDependencyIndexes)
 }
 
-func (f *file) toProto() *checkv1.File {
-	return &checkv1.File{
+func (f *fileDescriptor) ToProto() *descriptorv1.FileDescriptor {
+	if f == nil {
+		return nil
+	}
+	return &descriptorv1.FileDescriptor{
 		FileDescriptorProto: f.fileDescriptorProto,
 		IsImport:            f.isImport,
 		IsSyntaxUnspecified: f.isSyntaxUnspecified,
@@ -186,21 +189,4 @@ func (f *file) toProto() *checkv1.File {
 	}
 }
 
-func (*file) isFile() {}
-
-func validateFiles(files []File) error {
-	_, err := fileNameToFileForFiles(files)
-	return err
-}
-
-func fileNameToFileForFiles(files []File) (map[string]File, error) {
-	fileNameToFile := make(map[string]File, len(files))
-	for _, file := range files {
-		fileName := file.FileDescriptor().Path()
-		if _, ok := fileNameToFile[fileName]; ok {
-			return nil, fmt.Errorf("duplicate file name: %q", fileName)
-		}
-		fileNameToFile[fileName] = file
-	}
-	return fileNameToFile, nil
-}
+func (*fileDescriptor) isFileDescriptor() {}

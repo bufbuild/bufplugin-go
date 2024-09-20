@@ -55,7 +55,7 @@ issues:
       test: "CheckServiceHandlerOption"
     - linters:
         - exhaustive
-      path: check/options.go
+      path: option/options.go
       text: "reflect.Pointer|reflect.Ptr"
     - linters:
         - gocritic
@@ -101,3 +101,10 @@ issues:
     - linters:
         - varnamelen
       path: internal/pkg/xslices/xslices.go
+    - linters:
+        - revive
+      path: internal/pkg/compare/compare.go
+    - linters:
+        - gosec
+      path: check/checktest/checktest.go
+      text: "G115:"

@@ -89,31 +89,6 @@ func (o *duplicateRuleOrCategoryIDError) Error() string {
 	return sb.String()
 }
 
-type unexpectedOptionValueTypeError struct {
-	key      string
-	expected any
-	actual   any
-}
-
-func newUnexpectedOptionValueTypeError(key string, expected any, actual any) *unexpectedOptionValueTypeError {
-	return &unexpectedOptionValueTypeError{
-		key:      key,
-		expected: expected,
-		actual:   actual,
-	}
-}
-
-func (u *unexpectedOptionValueTypeError) Error() string {
-	if u == nil {
-		return ""
-	}
-	var sb strings.Builder
-	_, _ = sb.WriteString(`unexpected type for option value "`)
-	_, _ = sb.WriteString(u.key)
-	_, _ = sb.WriteString(fmt.Sprintf(`": expected %T, got %T`, u.expected, u.actual))
-	return sb.String()
-}
-
 type validateRuleSpecError struct {
 	delegate error
 }

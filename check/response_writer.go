@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"sync"
 
+	"buf.build/go/bufplugin/descriptor"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -158,8 +159,8 @@ func WithAgainstFileNameAndSourcePath(againstFileName string, againstSourcePath 
 //
 // multiResponseWriter is used by checkClients and checkServiceHandlers.
 type multiResponseWriter struct {
-	fileNameToFile        map[string]File
-	againstFileNameToFile map[string]File
+	fileNameToFileDescriptor        map[string]descriptor.FileDescriptor
+	againstFileNameToFileDescriptor map[string]descriptor.FileDescriptor
 
 	annotations []Annotation
 	written     bool
@@ -168,17 +169,17 @@ type multiResponseWriter struct {
 }
 
 func newMultiResponseWriter(request Request) (*multiResponseWriter, error) {
-	fileNameToFile, err := fileNameToFileForFiles(request.Files())
+	fileNameToFileDescriptor, err := fileNameToFileDescriptorForFileDescriptors(request.FileDescriptors())
 	if err != nil {
 		return nil, err
 	}
-	againstFileNameToFile, err := fileNameToFileForFiles(request.AgainstFiles())
+	againstFileNameToFileDescriptor, err := fileNameToFileDescriptorForFileDescriptors(request.AgainstFileDescriptors())
 	if err != nil {
 		return nil, err
 	}
 	return &multiResponseWriter{
-		fileNameToFile:        fileNameToFile,
-		againstFileNameToFile: againstFileNameToFile,
+		fileNameToFileDescriptor:        fileNameToFileDescriptor,
+		againstFileNameToFileDescriptor: againstFileNameToFileDescriptor,
 	}, nil
 }
 
@@ -208,8 +209,8 @@ func (m *multiResponseWriter) addAnnotation(
 		return
 	}
 
-	location, err := getLocationForAddAnnotationOptions(
-		m.fileNameToFile,
+	fileLocation, err := getFileLocationForAddAnnotationOptions(
+		m.fileNameToFileDescriptor,
 		addAnnotationOptions.descriptor,
 		addAnnotationOptions.fileName,
 		addAnnotationOptions.sourcePath,
@@ -218,8 +219,8 @@ func (m *multiResponseWriter) addAnnotation(
 		m.errs = append(m.errs, err)
 		return
 	}
-	againstLocation, err := getLocationForAddAnnotationOptions(
-		m.againstFileNameToFile,
+	againstFileLocation, err := getFileLocationForAddAnnotationOptions(
+		m.againstFileNameToFileDescriptor,
 		addAnnotationOptions.againstDescriptor,
 		addAnnotationOptions.againstFileName,
 		addAnnotationOptions.againstSourcePath,
@@ -231,8 +232,8 @@ func (m *multiResponseWriter) addAnnotation(
 	annotation, err := newAnnotation(
 		ruleID,
 		addAnnotationOptions.message,
-		location,
-		againstLocation,
+		fileLocation,
+		againstFileLocation,
 	)
 	if err != nil {
 		m.errs = append(m.errs, err)
@@ -312,36 +313,36 @@ func validateAddAnnotationOptions(addAnnotationOptions *addAnnotationOptions) er
 	return nil
 }
 
-func getLocationForAddAnnotationOptions(
-	fileNameToFile map[string]File,
-	descriptor protoreflect.Descriptor,
+func getFileLocationForAddAnnotationOptions(
+	fileNameToFileDescriptor map[string]descriptor.FileDescriptor,
+	protoreflectDescriptor protoreflect.Descriptor,
 	fileName string,
 	path protoreflect.SourcePath,
-) (Location, error) {
-	if descriptor != nil {
+) (descriptor.FileLocation, error) {
+	if protoreflectDescriptor != nil {
 		// Technically, ParentFile() can be nil.
-		if fileDescriptor := descriptor.ParentFile(); fileDescriptor != nil {
-			file, ok := fileNameToFile[fileDescriptor.Path()]
+		if protoreflectFileDescriptor := protoreflectDescriptor.ParentFile(); protoreflectFileDescriptor != nil {
+			fileDescriptor, ok := fileNameToFileDescriptor[protoreflectFileDescriptor.Path()]
 			if !ok {
-				return nil, fmt.Errorf("cannot add annotation for unknown file: %q", fileDescriptor.Path())
+				return nil, fmt.Errorf("cannot add annotation for unknown file: %q", protoreflectFileDescriptor.Path())
 			}
-			return newLocation(
-				file,
-				fileDescriptor.SourceLocations().ByDescriptor(descriptor),
+			return descriptor.NewFileLocation(
+				fileDescriptor,
+				protoreflectFileDescriptor.SourceLocations().ByDescriptor(protoreflectDescriptor),
 			), nil
 		}
 		return nil, nil
 	}
 	if fileName != "" {
 		var sourceLocation protoreflect.SourceLocation
-		file, ok := fileNameToFile[fileName]
+		fileDescriptor, ok := fileNameToFileDescriptor[fileName]
 		if !ok {
 			return nil, fmt.Errorf("cannot add annotation for unknown file: %q", fileName)
 		}
 		if len(path) > 0 {
-			sourceLocation = file.FileDescriptor().SourceLocations().ByPath(path)
+			sourceLocation = fileDescriptor.ProtoreflectFileDescriptor().SourceLocations().ByPath(path)
 		}
-		return newLocation(file, sourceLocation), nil
+		return descriptor.NewFileLocation(fileDescriptor, sourceLocation), nil
 	}
 	return nil, nil
 }

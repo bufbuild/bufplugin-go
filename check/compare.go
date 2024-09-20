@@ -15,8 +15,9 @@
 package check
 
 import (
-	"slices"
 	"strings"
+
+	"buf.build/go/bufplugin/descriptor"
 )
 
 // CompareAnnotations returns -1 if one < two, 1 if one > two, 0 otherwise.
@@ -34,59 +35,14 @@ func CompareAnnotations(one Annotation, two Annotation) int {
 		return compare
 	}
 
-	if compare := CompareLocations(one.Location(), two.Location()); compare != 0 {
+	if compare := descriptor.CompareFileLocations(one.FileLocation(), two.FileLocation()); compare != 0 {
 		return compare
 	}
 
-	if compare := CompareLocations(one.AgainstLocation(), two.AgainstLocation()); compare != 0 {
+	if compare := descriptor.CompareFileLocations(one.AgainstFileLocation(), two.AgainstFileLocation()); compare != 0 {
 		return compare
 	}
 	return strings.Compare(one.Message(), two.Message())
-}
-
-// CompareLocations returns -1 if one < two, 1 if one > two, 0 otherwise.
-func CompareLocations(one Location, two Location) int {
-	if one == nil && two == nil {
-		return 0
-	}
-	if one == nil && two != nil {
-		return -1
-	}
-	if one != nil && two == nil {
-		return 1
-	}
-	if compare := strings.Compare(one.File().FileDescriptor().Path(), two.File().FileDescriptor().Path()); compare != 0 {
-		return compare
-	}
-
-	if compare := intCompare(one.StartLine(), two.StartLine()); compare != 0 {
-		return compare
-	}
-
-	if compare := intCompare(one.StartColumn(), two.StartColumn()); compare != 0 {
-		return compare
-	}
-
-	if compare := intCompare(one.EndLine(), two.EndLine()); compare != 0 {
-		return compare
-	}
-
-	if compare := intCompare(one.EndColumn(), two.EndColumn()); compare != 0 {
-		return compare
-	}
-
-	if compare := slices.Compare(one.unclonedSourcePath(), two.unclonedSourcePath()); compare != 0 {
-		return compare
-	}
-
-	if compare := strings.Compare(one.LeadingComments(), two.LeadingComments()); compare != 0 {
-		return compare
-	}
-
-	if compare := strings.Compare(one.TrailingComments(), two.TrailingComments()); compare != 0 {
-		return compare
-	}
-	return slices.Compare(one.unclonedLeadingDetachedComments(), two.unclonedLeadingDetachedComments())
 }
 
 // CompareRules returns -1 if one < two, 1 if one > two, 0 otherwise.
@@ -145,14 +101,4 @@ func compareCategorySpecs(one *CategorySpec, two *CategorySpec) int {
 		return 1
 	}
 	return strings.Compare(one.ID, two.ID)
-}
-
-func intCompare(one int, two int) int {
-	if one < two {
-		return -1
-	}
-	if one > two {
-		return 1
-	}
-	return 0
 }

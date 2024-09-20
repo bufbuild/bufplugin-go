@@ -53,7 +53,7 @@ func TestSimpleFailure(t *testing.T) {
 		ExpectedAnnotations: []checktest.ExpectedAnnotation{
 			{
 				RuleID: syntaxSpecifiedRuleID,
-				Location: &checktest.ExpectedLocation{
+				FileLocation: &checktest.ExpectedFileLocation{
 					FileName: "simple.proto",
 				},
 			},

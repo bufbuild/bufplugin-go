@@ -25,9 +25,11 @@ import (
 	"strconv"
 	"testing"
 
-	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
+	descriptorv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/descriptor/v1"
 	"buf.build/go/bufplugin/check"
+	"buf.build/go/bufplugin/descriptor"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
+	"buf.build/go/bufplugin/option"
 	"github.com/bufbuild/protocompile"
 	"github.com/bufbuild/protocompile/linker"
 	"github.com/bufbuild/protocompile/parser"
@@ -116,25 +118,25 @@ func (r *RequestSpec) ToRequest(ctx context.Context) (check.Request, error) {
 		return nil, errors.New("RequestSpec.Files not set")
 	}
 
-	againstFiles, err := r.AgainstFiles.ToFiles(ctx)
+	againstFileDescriptors, err := r.AgainstFiles.ToFileDescriptors(ctx)
 	if err != nil {
 		return nil, err
 	}
-	options, err := check.NewOptions(r.Options)
+	options, err := option.NewOptions(r.Options)
 	if err != nil {
 		return nil, err
 	}
 	requestOptions := []check.RequestOption{
-		check.WithAgainstFiles(againstFiles),
+		check.WithAgainstFileDescriptors(againstFileDescriptors),
 		check.WithOptions(options),
 		check.WithRuleIDs(r.RuleIDs...),
 	}
 
-	files, err := r.Files.ToFiles(ctx)
+	fileDescriptors, err := r.Files.ToFileDescriptors(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return check.NewRequest(files, requestOptions...)
+	return check.NewRequest(fileDescriptors, requestOptions...)
 }
 
 // ProtoFileSpec specifies files to be compiled for testing.
@@ -160,10 +162,10 @@ type ProtoFileSpec struct {
 	FilePaths []string
 }
 
-// ToFiles compiles the files into check.Files.
+// ToFileDescriptors compiles the files into descriptor.FileDescriptors.
 //
 // If p is nil, this returns an empty slice.
-func (p *ProtoFileSpec) ToFiles(ctx context.Context) ([]check.File, error) {
+func (p *ProtoFileSpec) ToFileDescriptors(ctx context.Context) ([]descriptor.FileDescriptor, error) {
 	if p == nil {
 		return nil, nil
 	}
@@ -185,22 +187,22 @@ type ExpectedAnnotation struct {
 	// against the value in Annotation. That is, it is valid to have an Annotation return
 	// a message but to not set it on ExpectedAnnotation.
 	Message string
-	// Location is the location of the failure.
-	Location *ExpectedLocation
-	// AgainstLocation is the against location of the failure.
-	AgainstLocation *ExpectedLocation
+	// FileLocation is the location of the failure.
+	FileLocation *ExpectedFileLocation
+	// AgainstFileLocation is the against location of the failure.
+	AgainstFileLocation *ExpectedFileLocation
 }
 
 // String implements fmt.Stringer.
 func (ea ExpectedAnnotation) String() string {
 	return "ruleID=\"" + ea.RuleID + "\"" +
 		" message=\"" + ea.Message + "\"" +
-		" location=\"" + ea.Location.String() + "\"" +
-		" againstLocation=\"" + ea.AgainstLocation.String() + "\""
+		" location=\"" + ea.FileLocation.String() + "\"" +
+		" againstLocation=\"" + ea.AgainstFileLocation.String() + "\""
 }
 
-// ExpectedLocation contains the values expected from a Location.
-type ExpectedLocation struct {
+// ExpectedFileLocation contains the values expected from a Location.
+type ExpectedFileLocation struct {
 	// FileName is the name of the file.
 	FileName string
 	// StartLine is the zero-indexed start line.
@@ -214,7 +216,7 @@ type ExpectedLocation struct {
 }
 
 // String implements fmt.Stringer.
-func (el *ExpectedLocation) String() string {
+func (el *ExpectedFileLocation) String() string {
 	if el == nil {
 		return "nil"
 	}
@@ -292,28 +294,28 @@ func expectedAnnotationForAnnotation(annotation check.Annotation) ExpectedAnnota
 		RuleID:  annotation.RuleID(),
 		Message: annotation.Message(),
 	}
-	if location := annotation.Location(); location != nil {
-		expectedAnnotation.Location = &ExpectedLocation{
-			FileName:    location.File().FileDescriptor().Path(),
-			StartLine:   location.StartLine(),
-			StartColumn: location.StartColumn(),
-			EndLine:     location.EndLine(),
-			EndColumn:   location.EndColumn(),
+	if fileLocation := annotation.FileLocation(); fileLocation != nil {
+		expectedAnnotation.FileLocation = &ExpectedFileLocation{
+			FileName:    fileLocation.FileDescriptor().ProtoreflectFileDescriptor().Path(),
+			StartLine:   fileLocation.StartLine(),
+			StartColumn: fileLocation.StartColumn(),
+			EndLine:     fileLocation.EndLine(),
+			EndColumn:   fileLocation.EndColumn(),
 		}
 	}
-	if againstLocation := annotation.AgainstLocation(); againstLocation != nil {
-		expectedAnnotation.AgainstLocation = &ExpectedLocation{
-			FileName:    againstLocation.File().FileDescriptor().Path(),
-			StartLine:   againstLocation.StartLine(),
-			StartColumn: againstLocation.StartColumn(),
-			EndLine:     againstLocation.EndLine(),
-			EndColumn:   againstLocation.EndColumn(),
+	if againstFileLocation := annotation.AgainstFileLocation(); againstFileLocation != nil {
+		expectedAnnotation.AgainstFileLocation = &ExpectedFileLocation{
+			FileName:    againstFileLocation.FileDescriptor().ProtoreflectFileDescriptor().Path(),
+			StartLine:   againstFileLocation.StartLine(),
+			StartColumn: againstFileLocation.StartColumn(),
+			EndLine:     againstFileLocation.EndLine(),
+			EndColumn:   againstFileLocation.EndColumn(),
 		}
 	}
 	return expectedAnnotation
 }
 
-func compile(ctx context.Context, dirPaths []string, filePaths []string) ([]check.File, error) {
+func compile(ctx context.Context, dirPaths []string, filePaths []string) ([]descriptor.FileDescriptor, error) {
 	dirPaths = fromSlashPaths(dirPaths)
 	filePaths = fromSlashPaths(filePaths)
 	toSlashFilePathMap := make(map[string]struct{}, len(filePaths))
@@ -351,7 +353,7 @@ func compile(ctx context.Context, dirPaths []string, filePaths []string) ([]chec
 	}
 	fileDescriptorSet := fileDescriptorSetForFileDescriptors(files)
 
-	protoFiles := make([]*checkv1.File, len(fileDescriptorSet.GetFile()))
+	protoFileDescriptors := make([]*descriptorv1.FileDescriptor, len(fileDescriptorSet.GetFile()))
 	for i, fileDescriptorProto := range fileDescriptorSet.GetFile() {
 		_, isNotImport := toSlashFilePathMap[fileDescriptorProto.GetName()]
 		_, isSyntaxUnspecified := syntaxUnspecifiedFilePaths[fileDescriptorProto.GetName()]
@@ -359,14 +361,14 @@ func compile(ctx context.Context, dirPaths []string, filePaths []string) ([]chec
 			fileDescriptorProto,
 			filePathToUnusedDependencyFilePaths[fileDescriptorProto.GetName()],
 		)
-		protoFiles[i] = &checkv1.File{
+		protoFileDescriptors[i] = &descriptorv1.FileDescriptor{
 			FileDescriptorProto: fileDescriptorProto,
 			IsImport:            !isNotImport,
 			IsSyntaxUnspecified: isSyntaxUnspecified,
 			UnusedDependency:    unusedDependencyIndexes,
 		}
 	}
-	return check.FilesForProtoFiles(protoFiles)
+	return descriptor.FileDescriptorsForProtoFileDescriptors(protoFileDescriptors)
 }
 
 func unusedDependencyIndexesForFilePathToUnusedDependencyFilePaths(
