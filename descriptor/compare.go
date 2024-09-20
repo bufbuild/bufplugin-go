@@ -32,7 +32,7 @@ func CompareFileLocations(one FileLocation, two FileLocation) int {
 	if one != nil && two == nil {
 		return 1
 	}
-	if compare := strings.Compare(one.FileDescriptor().Protoreflect().Path(), two.FileDescriptor().Protoreflect().Path()); compare != 0 {
+	if compare := strings.Compare(one.FileDescriptor().ProtoreflectFileDescriptor().Path(), two.FileDescriptor().ProtoreflectFileDescriptor().Path()); compare != 0 {
 		return compare
 	}
 	if compare := compare.CompareInts(one.StartLine(), two.StartLine()); compare != 0 {

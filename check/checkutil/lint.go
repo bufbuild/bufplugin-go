@@ -74,7 +74,7 @@ func NewFileImportRuleHandler(
 			fileDescriptor descriptor.FileDescriptor,
 		) error {
 			return forEachFileImport(
-				fileDescriptor.Protoreflect(),
+				fileDescriptor.ProtoreflectFileDescriptor(),
 				func(fileImport protoreflect.FileImport) error {
 					return f(ctx, responseWriter, request, fileImport)
 				},
@@ -100,7 +100,7 @@ func NewEnumRuleHandler(
 			fileDescriptor descriptor.FileDescriptor,
 		) error {
 			return forEachEnum(
-				fileDescriptor.Protoreflect(),
+				fileDescriptor.ProtoreflectFileDescriptor(),
 				func(enumDescriptor protoreflect.EnumDescriptor) error {
 					return f(ctx, responseWriter, request, enumDescriptor)
 				},
@@ -152,7 +152,7 @@ func NewMessageRuleHandler(
 			fileDescriptor descriptor.FileDescriptor,
 		) error {
 			return forEachMessage(
-				fileDescriptor.Protoreflect(),
+				fileDescriptor.ProtoreflectFileDescriptor(),
 				func(messageDescriptor protoreflect.MessageDescriptor) error {
 					return f(ctx, responseWriter, request, messageDescriptor)
 				},
@@ -180,7 +180,7 @@ func NewFieldRuleHandler(
 			fileDescriptor descriptor.FileDescriptor,
 		) error {
 			return forEachField(
-				fileDescriptor.Protoreflect(),
+				fileDescriptor.ProtoreflectFileDescriptor(),
 				func(fieldDescriptor protoreflect.FieldDescriptor) error {
 					return f(ctx, responseWriter, request, fieldDescriptor)
 				},
@@ -232,7 +232,7 @@ func NewServiceRuleHandler(
 			fileDescriptor descriptor.FileDescriptor,
 		) error {
 			return forEachService(
-				fileDescriptor.Protoreflect(),
+				fileDescriptor.ProtoreflectFileDescriptor(),
 				func(serviceDescriptor protoreflect.ServiceDescriptor) error {
 					return f(ctx, responseWriter, request, serviceDescriptor)
 				},

@@ -114,7 +114,7 @@ func (l *fileLocation) ToProto() *descriptorv1.FileLocation {
 		return nil
 	}
 	return &descriptorv1.FileLocation{
-		FileName:   l.fileDescriptor.Protoreflect().Path(),
+		FileName:   l.fileDescriptor.ProtoreflectFileDescriptor().Path(),
 		SourcePath: l.sourceLocation.Path,
 	}
 }

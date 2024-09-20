@@ -231,7 +231,7 @@ func validateFileDescriptors(fileDescriptors []descriptor.FileDescriptor) error 
 func fileNameToFileDescriptorForFileDescriptors(fileDescriptors []descriptor.FileDescriptor) (map[string]descriptor.FileDescriptor, error) {
 	fileNameToFileDescriptor := make(map[string]descriptor.FileDescriptor, len(fileDescriptors))
 	for _, fileDescriptor := range fileDescriptors {
-		fileName := fileDescriptor.Protoreflect().Path()
+		fileName := fileDescriptor.ProtoreflectFileDescriptor().Path()
 		if _, ok := fileNameToFileDescriptor[fileName]; ok {
 			return nil, fmt.Errorf("duplicate file name: %q", fileName)
 		}

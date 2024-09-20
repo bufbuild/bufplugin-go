@@ -77,7 +77,7 @@ func checkSyntaxSpecified(
 		syntax := fileDescriptor.FileDescriptorProto().GetSyntax()
 		responseWriter.AddAnnotation(
 			check.WithMessagef("Syntax should be specified but was %q.", syntax),
-			check.WithDescriptor(fileDescriptor.Protoreflect()),
+			check.WithDescriptor(fileDescriptor.ProtoreflectFileDescriptor()),
 		)
 	}
 	return nil

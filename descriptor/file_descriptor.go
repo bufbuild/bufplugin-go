@@ -29,10 +29,10 @@ import (
 // The raw FileDescriptorProto is also provided from this interface.
 // are provided.
 type FileDescriptor interface {
-	// Protoreflect returns the protoreflect FileDescriptor representing this File.
+	// ProtoreflectFileDescriptor returns the protoreflect.FileDescriptor representing this FileDescriptor.
 	//
 	// This will always contain SourceCodeInfo.
-	Protoreflect() protoreflect.FileDescriptor
+	ProtoreflectFileDescriptor() protoreflect.FileDescriptor
 
 	// FileDescriptorProto returns the FileDescriptorProto representing this File.
 	//
@@ -157,7 +157,7 @@ func newFileDescriptor(
 	}
 }
 
-func (f *fileDescriptor) Protoreflect() protoreflect.FileDescriptor {
+func (f *fileDescriptor) ProtoreflectFileDescriptor() protoreflect.FileDescriptor {
 	return f.protoreflectFileDescriptor
 }
 

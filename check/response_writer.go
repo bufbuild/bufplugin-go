@@ -340,7 +340,7 @@ func getFileLocationForAddAnnotationOptions(
 			return nil, fmt.Errorf("cannot add annotation for unknown file: %q", fileName)
 		}
 		if len(path) > 0 {
-			sourceLocation = fileDescriptor.Protoreflect().SourceLocations().ByPath(path)
+			sourceLocation = fileDescriptor.ProtoreflectFileDescriptor().SourceLocations().ByPath(path)
 		}
 		return descriptor.NewFileLocation(fileDescriptor, sourceLocation), nil
 	}

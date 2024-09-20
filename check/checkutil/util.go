@@ -32,7 +32,7 @@ type container interface {
 func getPathToFileDescriptor(fileDescriptors []descriptor.FileDescriptor) (map[string]descriptor.FileDescriptor, error) {
 	pathToFileDescriptorMap := make(map[string]descriptor.FileDescriptor, len(fileDescriptors))
 	for _, fileDescriptor := range fileDescriptors {
-		path := fileDescriptor.Protoreflect().Path()
+		path := fileDescriptor.ProtoreflectFileDescriptor().Path()
 		if _, ok := pathToFileDescriptorMap[path]; ok {
 			return nil, fmt.Errorf("duplicate file: %q", path)
 		}
@@ -45,7 +45,7 @@ func getFullNameToEnumDescriptor(fileDescriptors []descriptor.FileDescriptor) (m
 	fullNameToEnumDescriptorMap := make(map[protoreflect.FullName]protoreflect.EnumDescriptor)
 	for _, fileDescriptor := range fileDescriptors {
 		if err := forEachEnum(
-			fileDescriptor.Protoreflect(),
+			fileDescriptor.ProtoreflectFileDescriptor(),
 			func(enumDescriptor protoreflect.EnumDescriptor) error {
 				fullName := enumDescriptor.FullName()
 				if _, ok := fullNameToEnumDescriptorMap[fullName]; ok {
@@ -93,7 +93,7 @@ func getFullNameToMessageDescriptor(fileDescriptors []descriptor.FileDescriptor)
 	fullNameToMessageDescriptorMap := make(map[protoreflect.FullName]protoreflect.MessageDescriptor)
 	for _, fileDescriptor := range fileDescriptors {
 		if err := forEachMessage(
-			fileDescriptor.Protoreflect(),
+			fileDescriptor.ProtoreflectFileDescriptor(),
 			func(messageDescriptor protoreflect.MessageDescriptor) error {
 				fullName := messageDescriptor.FullName()
 				if _, ok := fullNameToMessageDescriptorMap[fullName]; ok {
@@ -117,7 +117,7 @@ func getContainingMessageFullNameToNumberToFieldDescriptor(
 	)
 	for _, fileDescriptor := range fileDescriptors {
 		if err := forEachField(
-			fileDescriptor.Protoreflect(),
+			fileDescriptor.ProtoreflectFileDescriptor(),
 			func(fieldDescriptor protoreflect.FieldDescriptor) error {
 				number := fieldDescriptor.Number()
 				containingMessage := fieldDescriptor.ContainingMessage()
@@ -147,7 +147,7 @@ func getFullNameToServiceDescriptor(fileDescriptors []descriptor.FileDescriptor)
 	fullNameToServiceDescriptorMap := make(map[protoreflect.FullName]protoreflect.ServiceDescriptor)
 	for _, fileDescriptor := range fileDescriptors {
 		if err := forEachService(
-			fileDescriptor.Protoreflect(),
+			fileDescriptor.ProtoreflectFileDescriptor(),
 			func(serviceDescriptor protoreflect.ServiceDescriptor) error {
 				fullName := serviceDescriptor.FullName()
 				if _, ok := fullNameToServiceDescriptorMap[fullName]; ok {

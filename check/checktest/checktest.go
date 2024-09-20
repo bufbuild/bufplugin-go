@@ -296,7 +296,7 @@ func expectedAnnotationForAnnotation(annotation check.Annotation) ExpectedAnnota
 	}
 	if fileLocation := annotation.FileLocation(); fileLocation != nil {
 		expectedAnnotation.FileLocation = &ExpectedFileLocation{
-			FileName:    fileLocation.FileDescriptor().Protoreflect().Path(),
+			FileName:    fileLocation.FileDescriptor().ProtoreflectFileDescriptor().Path(),
 			StartLine:   fileLocation.StartLine(),
 			StartColumn: fileLocation.StartColumn(),
 			EndLine:     fileLocation.EndLine(),
@@ -305,7 +305,7 @@ func expectedAnnotationForAnnotation(annotation check.Annotation) ExpectedAnnota
 	}
 	if againstFileLocation := annotation.AgainstFileLocation(); againstFileLocation != nil {
 		expectedAnnotation.AgainstFileLocation = &ExpectedFileLocation{
-			FileName:    againstFileLocation.FileDescriptor().Protoreflect().Path(),
+			FileName:    againstFileLocation.FileDescriptor().ProtoreflectFileDescriptor().Path(),
 			StartLine:   againstFileLocation.StartLine(),
 			StartColumn: againstFileLocation.StartColumn(),
 			EndLine:     againstFileLocation.EndLine(),
