@@ -18,15 +18,16 @@ import (
 	"context"
 
 	"buf.build/go/bufplugin/check"
+	"buf.build/go/bufplugin/descriptor"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 // NewFileRuleHandler returns a new RuleHandler that will call f for every file
-// within the check.Request's Files().
+// within the check.Request's FileDescriptors().
 //
 // This is typically used for lint Rules. Most callers will use the WithoutImports() options.
 func NewFileRuleHandler(
-	f func(context.Context, check.ResponseWriter, check.Request, check.File) error,
+	f func(context.Context, check.ResponseWriter, check.Request, descriptor.FileDescriptor) error,
 	options ...IteratorOption,
 ) check.RuleHandler {
 	iteratorOptions := newIteratorOptions()
@@ -39,11 +40,11 @@ func NewFileRuleHandler(
 			responseWriter check.ResponseWriter,
 			request check.Request,
 		) error {
-			for _, file := range request.Files() {
-				if iteratorOptions.withoutImports && file.IsImport() {
+			for _, fileDescriptor := range request.FileDescriptors() {
+				if iteratorOptions.withoutImports && fileDescriptor.IsImport() {
 					continue
 				}
-				if err := f(ctx, responseWriter, request, file); err != nil {
+				if err := f(ctx, responseWriter, request, fileDescriptor); err != nil {
 					return err
 				}
 			}
@@ -53,12 +54,12 @@ func NewFileRuleHandler(
 }
 
 // NewFileImportRuleHandler returns a new RuleHandler that will call f for every "import" statement
-// within the check.Request's Files().
+// within the check.Request's FileDescriptors().
 //
-// Note that terms are overloaded here: check.File.IsImport denotes whether the File is an import
-// itself, while this iterates over the protoreflect.FileImports within each File. The option
+// Note that terms are overloaded here: descriptor.FileDescriptor.IsImport denotes whether the FileDescriptor is an import
+// itself, while this iterates over the protoreflect.FileImports within each FileDescriptor. The option
 // WithoutImports() is a separate concern - NewFileImportRuleHandler(f, WithoutImports()) will
-// iterate over all the FileImports for the non-import Files.
+// iterate over all the FileImports for the non-import FileDescriptors.
 //
 // This is typically used for lint Rules. Most callers will use the WithoutImports() options.
 func NewFileImportRuleHandler(
@@ -70,10 +71,10 @@ func NewFileImportRuleHandler(
 			ctx context.Context,
 			responseWriter check.ResponseWriter,
 			request check.Request,
-			file check.File,
+			fileDescriptor descriptor.FileDescriptor,
 		) error {
 			return forEachFileImport(
-				file.FileDescriptor(),
+				fileDescriptor.Protoreflect(),
 				func(fileImport protoreflect.FileImport) error {
 					return f(ctx, responseWriter, request, fileImport)
 				},
@@ -84,7 +85,7 @@ func NewFileImportRuleHandler(
 }
 
 // NewEnumRuleHandler returns a new RuleHandler that will call f for every enum
-// within the check.Request's Files().
+// within the check.Request's FileDescriptors().
 //
 // This is typically used for lint Rules. Most callers will use the WithoutImports() options.
 func NewEnumRuleHandler(
@@ -96,10 +97,10 @@ func NewEnumRuleHandler(
 			ctx context.Context,
 			responseWriter check.ResponseWriter,
 			request check.Request,
-			file check.File,
+			fileDescriptor descriptor.FileDescriptor,
 		) error {
 			return forEachEnum(
-				file.FileDescriptor(),
+				fileDescriptor.Protoreflect(),
 				func(enumDescriptor protoreflect.EnumDescriptor) error {
 					return f(ctx, responseWriter, request, enumDescriptor)
 				},
@@ -110,7 +111,7 @@ func NewEnumRuleHandler(
 }
 
 // NewEnumValueRuleHandler returns a new RuleHandler that will call f for every value in every enum
-// within the check.Request's Files().
+// within the check.Request's FileDescriptors().
 //
 // This is typically used for lint Rules. Most callers will use the WithoutImports() options.
 func NewEnumValueRuleHandler(
@@ -136,7 +137,7 @@ func NewEnumValueRuleHandler(
 }
 
 // NewMessageRuleHandler returns a new RuleHandler that will call f for every message
-// within the check.Request's Files().
+// within the check.Request's FileDescriptors().
 //
 // This is typically used for lint Rules. Most callers will use the WithoutImports() options.
 func NewMessageRuleHandler(
@@ -148,10 +149,10 @@ func NewMessageRuleHandler(
 			ctx context.Context,
 			responseWriter check.ResponseWriter,
 			request check.Request,
-			file check.File,
+			fileDescriptor descriptor.FileDescriptor,
 		) error {
 			return forEachMessage(
-				file.FileDescriptor(),
+				fileDescriptor.Protoreflect(),
 				func(messageDescriptor protoreflect.MessageDescriptor) error {
 					return f(ctx, responseWriter, request, messageDescriptor)
 				},
@@ -162,7 +163,7 @@ func NewMessageRuleHandler(
 }
 
 // NewFieldRuleHandler returns a new RuleHandler that will call f for every field in every message
-// within the check.Request's Files().
+// within the check.Request's FileDescriptors().
 //
 // This includes extensions.
 //
@@ -176,10 +177,10 @@ func NewFieldRuleHandler(
 			ctx context.Context,
 			responseWriter check.ResponseWriter,
 			request check.Request,
-			file check.File,
+			fileDescriptor descriptor.FileDescriptor,
 		) error {
 			return forEachField(
-				file.FileDescriptor(),
+				fileDescriptor.Protoreflect(),
 				func(fieldDescriptor protoreflect.FieldDescriptor) error {
 					return f(ctx, responseWriter, request, fieldDescriptor)
 				},
@@ -190,7 +191,7 @@ func NewFieldRuleHandler(
 }
 
 // NewOneofRuleHandler returns a new RuleHandler that will call f for every oneof in every message
-// within the check.Request's Files().
+// within the check.Request's FileDescriptors().
 //
 // This is typically used for lint Rules. Most callers will use the WithoutImports() options.
 func NewOneofRuleHandler(
@@ -216,7 +217,7 @@ func NewOneofRuleHandler(
 }
 
 // NewServiceRuleHandler returns a new RuleHandler that will call f for every service
-// within the check.Request's Files().
+// within the check.Request's FileDescriptors().
 //
 // This is typically used for lint Rules. Most callers will use the WithoutImports() options.
 func NewServiceRuleHandler(
@@ -228,10 +229,10 @@ func NewServiceRuleHandler(
 			ctx context.Context,
 			responseWriter check.ResponseWriter,
 			request check.Request,
-			file check.File,
+			fileDescriptor descriptor.FileDescriptor,
 		) error {
 			return forEachService(
-				file.FileDescriptor(),
+				fileDescriptor.Protoreflect(),
 				func(serviceDescriptor protoreflect.ServiceDescriptor) error {
 					return f(ctx, responseWriter, request, serviceDescriptor)
 				},
@@ -242,7 +243,7 @@ func NewServiceRuleHandler(
 }
 
 // NewMethodRuleHandler returns a new RuleHandler that will call f for every method in every service
-// within the check.Request's Files().
+// within the check.Request's FileDescriptors().
 //
 // This is typically used for lint Rules. Most callers will use the WithoutImports() options.
 func NewMethodRuleHandler(

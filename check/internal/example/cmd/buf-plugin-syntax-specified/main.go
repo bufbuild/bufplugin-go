@@ -36,6 +36,7 @@ import (
 
 	"buf.build/go/bufplugin/check"
 	"buf.build/go/bufplugin/check/checkutil"
+	"buf.build/go/bufplugin/descriptor"
 )
 
 // syntaxSpecifiedRuleID is the Rule ID of the syntax specified Rule.
@@ -70,13 +71,13 @@ func checkSyntaxSpecified(
 	_ context.Context,
 	responseWriter check.ResponseWriter,
 	_ check.Request,
-	file check.File,
+	fileDescriptor descriptor.FileDescriptor,
 ) error {
-	if file.IsSyntaxUnspecified() {
-		syntax := file.FileDescriptorProto().GetSyntax()
+	if fileDescriptor.IsSyntaxUnspecified() {
+		syntax := fileDescriptor.FileDescriptorProto().GetSyntax()
 		responseWriter.AddAnnotation(
 			check.WithMessagef("Syntax should be specified but was %q.", syntax),
-			check.WithDescriptor(file.FileDescriptor()),
+			check.WithDescriptor(fileDescriptor.Protoreflect()),
 		)
 	}
 	return nil

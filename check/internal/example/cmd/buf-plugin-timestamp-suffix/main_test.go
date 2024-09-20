@@ -42,7 +42,7 @@ func TestSimple(t *testing.T) {
 		ExpectedAnnotations: []checktest.ExpectedAnnotation{
 			{
 				RuleID: timestampSuffixRuleID,
-				Location: &checktest.ExpectedLocation{
+				FileLocation: &checktest.ExpectedFileLocation{
 					FileName:    "simple.proto",
 					StartLine:   8,
 					StartColumn: 2,
@@ -71,7 +71,7 @@ func TestOption(t *testing.T) {
 		ExpectedAnnotations: []checktest.ExpectedAnnotation{
 			{
 				RuleID: timestampSuffixRuleID,
-				Location: &checktest.ExpectedLocation{
+				FileLocation: &checktest.ExpectedFileLocation{
 					FileName:    "option.proto",
 					StartLine:   8,
 					StartColumn: 2,

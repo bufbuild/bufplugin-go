@@ -101,3 +101,10 @@ issues:
     - linters:
         - varnamelen
       path: internal/pkg/xslices/xslices.go
+    - linters:
+        - revive
+      path: internal/pkg/compare/compare.go
+    - linters:
+        - gosec
+      path: check/checktest/checktest.go
+      text: "G115:"

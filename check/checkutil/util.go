@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"sort"
 
-	"buf.build/go/bufplugin/check"
+	"buf.build/go/bufplugin/descriptor"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
@@ -29,23 +29,23 @@ type container interface {
 	Extensions() protoreflect.ExtensionDescriptors
 }
 
-func getPathToFile(files []check.File) (map[string]check.File, error) {
-	pathToFileMap := make(map[string]check.File, len(files))
-	for _, file := range files {
-		path := file.FileDescriptor().Path()
-		if _, ok := pathToFileMap[path]; ok {
+func getPathToFileDescriptor(fileDescriptors []descriptor.FileDescriptor) (map[string]descriptor.FileDescriptor, error) {
+	pathToFileDescriptorMap := make(map[string]descriptor.FileDescriptor, len(fileDescriptors))
+	for _, fileDescriptor := range fileDescriptors {
+		path := fileDescriptor.Protoreflect().Path()
+		if _, ok := pathToFileDescriptorMap[path]; ok {
 			return nil, fmt.Errorf("duplicate file: %q", path)
 		}
-		pathToFileMap[path] = file
+		pathToFileDescriptorMap[path] = fileDescriptor
 	}
-	return pathToFileMap, nil
+	return pathToFileDescriptorMap, nil
 }
 
-func getFullNameToEnumDescriptor(files []check.File) (map[protoreflect.FullName]protoreflect.EnumDescriptor, error) {
+func getFullNameToEnumDescriptor(fileDescriptors []descriptor.FileDescriptor) (map[protoreflect.FullName]protoreflect.EnumDescriptor, error) {
 	fullNameToEnumDescriptorMap := make(map[protoreflect.FullName]protoreflect.EnumDescriptor)
-	for _, file := range files {
+	for _, fileDescriptor := range fileDescriptors {
 		if err := forEachEnum(
-			file.FileDescriptor(),
+			fileDescriptor.Protoreflect(),
 			func(enumDescriptor protoreflect.EnumDescriptor) error {
 				fullName := enumDescriptor.FullName()
 				if _, ok := fullNameToEnumDescriptorMap[fullName]; ok {
@@ -89,11 +89,11 @@ func getNumberToEnumValueDescriptors(enumDescriptor protoreflect.EnumDescriptor)
 	return numberToEnumValueDescriptorsMap, nil
 }
 
-func getFullNameToMessageDescriptor(files []check.File) (map[protoreflect.FullName]protoreflect.MessageDescriptor, error) {
+func getFullNameToMessageDescriptor(fileDescriptors []descriptor.FileDescriptor) (map[protoreflect.FullName]protoreflect.MessageDescriptor, error) {
 	fullNameToMessageDescriptorMap := make(map[protoreflect.FullName]protoreflect.MessageDescriptor)
-	for _, file := range files {
+	for _, fileDescriptor := range fileDescriptors {
 		if err := forEachMessage(
-			file.FileDescriptor(),
+			fileDescriptor.Protoreflect(),
 			func(messageDescriptor protoreflect.MessageDescriptor) error {
 				fullName := messageDescriptor.FullName()
 				if _, ok := fullNameToMessageDescriptorMap[fullName]; ok {
@@ -110,14 +110,14 @@ func getFullNameToMessageDescriptor(files []check.File) (map[protoreflect.FullNa
 }
 
 func getContainingMessageFullNameToNumberToFieldDescriptor(
-	files []check.File,
+	fileDescriptors []descriptor.FileDescriptor,
 ) (map[protoreflect.FullName]map[protoreflect.FieldNumber]protoreflect.FieldDescriptor, error) {
 	containingMessageFullNameToNumberToFieldDescriptorMap := make(
 		map[protoreflect.FullName]map[protoreflect.FieldNumber]protoreflect.FieldDescriptor,
 	)
-	for _, file := range files {
+	for _, fileDescriptor := range fileDescriptors {
 		if err := forEachField(
-			file.FileDescriptor(),
+			fileDescriptor.Protoreflect(),
 			func(fieldDescriptor protoreflect.FieldDescriptor) error {
 				number := fieldDescriptor.Number()
 				containingMessage := fieldDescriptor.ContainingMessage()
@@ -143,11 +143,11 @@ func getContainingMessageFullNameToNumberToFieldDescriptor(
 	return containingMessageFullNameToNumberToFieldDescriptorMap, nil
 }
 
-func getFullNameToServiceDescriptor(files []check.File) (map[protoreflect.FullName]protoreflect.ServiceDescriptor, error) {
+func getFullNameToServiceDescriptor(fileDescriptors []descriptor.FileDescriptor) (map[protoreflect.FullName]protoreflect.ServiceDescriptor, error) {
 	fullNameToServiceDescriptorMap := make(map[protoreflect.FullName]protoreflect.ServiceDescriptor)
-	for _, file := range files {
+	for _, fileDescriptor := range fileDescriptors {
 		if err := forEachService(
-			file.FileDescriptor(),
+			fileDescriptor.Protoreflect(),
 			func(serviceDescriptor protoreflect.ServiceDescriptor) error {
 				fullName := serviceDescriptor.FullName()
 				if _, ok := fullNameToServiceDescriptorMap[fullName]; ok {
@@ -317,9 +317,9 @@ func forEachMethod(
 	return nil
 }
 
-func filterFiles(files []check.File, withoutImports bool) []check.File {
+func filterFileDescriptors(fileDescriptors []descriptor.FileDescriptor, withoutImports bool) []descriptor.FileDescriptor {
 	if !withoutImports {
-		return files
+		return fileDescriptors
 	}
-	return xslices.Filter(files, func(file check.File) bool { return !file.IsImport() })
+	return xslices.Filter(fileDescriptors, func(fileDescriptor descriptor.FileDescriptor) bool { return !fileDescriptor.IsImport() })
 }

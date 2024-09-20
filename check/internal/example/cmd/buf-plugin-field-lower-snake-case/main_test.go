@@ -39,7 +39,7 @@ func TestSimple(t *testing.T) {
 		ExpectedAnnotations: []checktest.ExpectedAnnotation{
 			{
 				RuleID: fieldLowerSnakeCaseRuleID,
-				Location: &checktest.ExpectedLocation{
+				FileLocation: &checktest.ExpectedFileLocation{
 					FileName:    "simple.proto",
 					StartLine:   6,
 					StartColumn: 2,

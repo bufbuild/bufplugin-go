@@ -18,13 +18,14 @@ import (
 	"context"
 
 	"buf.build/go/bufplugin/check"
+	"buf.build/go/bufplugin/descriptor"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 // NewFilePairRuleHandler returns a new RuleHandler that will call f for every file pair
-// within the check.Request's Files() and AgainstFiles().
+// within the check.Request's FileDescriptors() and AgainstFileDescriptors().
 //
-// The Files will be paired up by name. Files that cannot be paired up are skipped.
+// The FileDescriptors will be paired up by name. FileDescriptors that cannot be paired up are skipped.
 //
 // This is typically used for breaking change Rules.
 func NewFilePairRuleHandler(
@@ -32,8 +33,8 @@ func NewFilePairRuleHandler(
 		ctx context.Context,
 		responseWriter check.ResponseWriter,
 		request check.Request,
-		file check.File,
-		againstFile check.File,
+		fileDescriptor descriptor.FileDescriptor,
+		againstFileDescriptor descriptor.FileDescriptor,
 	) error,
 	options ...IteratorOption,
 ) check.RuleHandler {
@@ -47,19 +48,19 @@ func NewFilePairRuleHandler(
 			responseWriter check.ResponseWriter,
 			request check.Request,
 		) error {
-			files := filterFiles(request.Files(), iteratorOptions.withoutImports)
-			againstFiles := filterFiles(request.AgainstFiles(), iteratorOptions.withoutImports)
-			pathToFile, err := getPathToFile(files)
+			fileDescriptors := filterFileDescriptors(request.FileDescriptors(), iteratorOptions.withoutImports)
+			againstFileDescriptors := filterFileDescriptors(request.AgainstFileDescriptors(), iteratorOptions.withoutImports)
+			pathToFileDescriptor, err := getPathToFileDescriptor(fileDescriptors)
 			if err != nil {
 				return err
 			}
-			againstPathToFile, err := getPathToFile(againstFiles)
+			againstPathToFileDescriptor, err := getPathToFileDescriptor(againstFileDescriptors)
 			if err != nil {
 				return err
 			}
-			for againstPath, againstFile := range againstPathToFile {
-				if file, ok := pathToFile[againstPath]; ok {
-					if err = f(ctx, responseWriter, request, file, againstFile); err != nil {
+			for againstPath, againstFileDescriptor := range againstPathToFileDescriptor {
+				if fileDescriptor, ok := pathToFileDescriptor[againstPath]; ok {
+					if err = f(ctx, responseWriter, request, fileDescriptor, againstFileDescriptor); err != nil {
 						return err
 					}
 				}
@@ -70,7 +71,7 @@ func NewFilePairRuleHandler(
 }
 
 // NewEnumPairRuleHandler returns a new RuleHandler that will call f for every enum pair
-// within the check.Request's Files() and AgainstFiles().
+// within the check.Request's FileDescriptors() and AgainstFileDescriptors().
 //
 // The enums will be paired up by fully-qualified name. Enums that cannot be paired up are skipped.
 //
@@ -95,13 +96,13 @@ func NewEnumPairRuleHandler(
 			responseWriter check.ResponseWriter,
 			request check.Request,
 		) error {
-			files := filterFiles(request.Files(), iteratorOptions.withoutImports)
-			againstFiles := filterFiles(request.AgainstFiles(), iteratorOptions.withoutImports)
-			fullNameToEnumDescriptor, err := getFullNameToEnumDescriptor(files)
+			fileDescriptors := filterFileDescriptors(request.FileDescriptors(), iteratorOptions.withoutImports)
+			againstFileDescriptors := filterFileDescriptors(request.AgainstFileDescriptors(), iteratorOptions.withoutImports)
+			fullNameToEnumDescriptor, err := getFullNameToEnumDescriptor(fileDescriptors)
 			if err != nil {
 				return err
 			}
-			againstFullNameToEnumDescriptor, err := getFullNameToEnumDescriptor(againstFiles)
+			againstFullNameToEnumDescriptor, err := getFullNameToEnumDescriptor(againstFileDescriptors)
 			if err != nil {
 				return err
 			}
@@ -118,7 +119,7 @@ func NewEnumPairRuleHandler(
 }
 
 // NewMessagePairRuleHandler returns a new RuleHandler that will call f for every message pair
-// within the check.Request's Files() and AgainstFiles().
+// within the check.Request's FileDescriptors() and AgainstFileDescriptors().
 //
 // The messages will be paired up by fully-qualified name. Messages that cannot be paired up are skipped.
 //
@@ -143,13 +144,13 @@ func NewMessagePairRuleHandler(
 			responseWriter check.ResponseWriter,
 			request check.Request,
 		) error {
-			files := filterFiles(request.Files(), iteratorOptions.withoutImports)
-			againstFiles := filterFiles(request.AgainstFiles(), iteratorOptions.withoutImports)
-			fullNameToMessageDescriptor, err := getFullNameToMessageDescriptor(files)
+			fileDescriptors := filterFileDescriptors(request.FileDescriptors(), iteratorOptions.withoutImports)
+			againstFileDescriptors := filterFileDescriptors(request.AgainstFileDescriptors(), iteratorOptions.withoutImports)
+			fullNameToMessageDescriptor, err := getFullNameToMessageDescriptor(fileDescriptors)
 			if err != nil {
 				return err
 			}
-			againstFullNameToMessageDescriptor, err := getFullNameToMessageDescriptor(againstFiles)
+			againstFullNameToMessageDescriptor, err := getFullNameToMessageDescriptor(againstFileDescriptors)
 			if err != nil {
 				return err
 			}
@@ -166,7 +167,7 @@ func NewMessagePairRuleHandler(
 }
 
 // NewFieldPairRuleHandler returns a new RuleHandler that will call f for every field pair
-// within the check.Request's Files() and AgainstFiles().
+// within the check.Request's FileDescriptors() and AgainstFileDescriptors().
 //
 // The fields will be paired up by the fully-qualified name of the message, and the field number.
 // Fields that cannot be paired up are skipped.
@@ -194,13 +195,13 @@ func NewFieldPairRuleHandler(
 			responseWriter check.ResponseWriter,
 			request check.Request,
 		) error {
-			files := filterFiles(request.Files(), iteratorOptions.withoutImports)
-			againstFiles := filterFiles(request.AgainstFiles(), iteratorOptions.withoutImports)
-			containingMessageFullNameToNumberToFieldDescriptor, err := getContainingMessageFullNameToNumberToFieldDescriptor(files)
+			fileDescriptors := filterFileDescriptors(request.FileDescriptors(), iteratorOptions.withoutImports)
+			againstFileDescriptors := filterFileDescriptors(request.AgainstFileDescriptors(), iteratorOptions.withoutImports)
+			containingMessageFullNameToNumberToFieldDescriptor, err := getContainingMessageFullNameToNumberToFieldDescriptor(fileDescriptors)
 			if err != nil {
 				return err
 			}
-			againstContainingMessageFullNameToNumberToFieldDescriptor, err := getContainingMessageFullNameToNumberToFieldDescriptor(againstFiles)
+			againstContainingMessageFullNameToNumberToFieldDescriptor, err := getContainingMessageFullNameToNumberToFieldDescriptor(againstFileDescriptors)
 			if err != nil {
 				return err
 			}
@@ -221,7 +222,7 @@ func NewFieldPairRuleHandler(
 }
 
 // NewServicePairRuleHandler returns a new RuleHandler that will call f for every service pair
-// within the check.Request's Files() and AgainstFiles().
+// within the check.Request's FileDescriptors() and AgainstFileDescriptors().
 //
 // The services will be paired up by fully-qualified name. Services that cannot be paired up are skipped.
 //
@@ -246,13 +247,13 @@ func NewServicePairRuleHandler(
 			responseWriter check.ResponseWriter,
 			request check.Request,
 		) error {
-			files := filterFiles(request.Files(), iteratorOptions.withoutImports)
-			againstFiles := filterFiles(request.AgainstFiles(), iteratorOptions.withoutImports)
-			fullNameToServiceDescriptor, err := getFullNameToServiceDescriptor(files)
+			fileDescriptors := filterFileDescriptors(request.FileDescriptors(), iteratorOptions.withoutImports)
+			againstFileDescriptors := filterFileDescriptors(request.AgainstFileDescriptors(), iteratorOptions.withoutImports)
+			fullNameToServiceDescriptor, err := getFullNameToServiceDescriptor(fileDescriptors)
 			if err != nil {
 				return err
 			}
-			againstFullNameToServiceDescriptor, err := getFullNameToServiceDescriptor(againstFiles)
+			againstFullNameToServiceDescriptor, err := getFullNameToServiceDescriptor(againstFileDescriptors)
 			if err != nil {
 				return err
 			}
@@ -269,7 +270,7 @@ func NewServicePairRuleHandler(
 }
 
 // NewMethodPairRuleHandler returns a new RuleHandler that will call f for every method pair
-// within the check.Request's Files() and AgainstFiles().
+// within the check.Request's FileDescriptors() and AgainstFileDescriptors().
 //
 // The services will be paired up by fully-qualified name of the service, and name of the method.
 // Methods that cannot be paired up are skipped.
