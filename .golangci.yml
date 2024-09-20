@@ -55,7 +55,7 @@ issues:
       test: "CheckServiceHandlerOption"
     - linters:
         - exhaustive
-      path: check/options.go
+      path: option/options.go
       text: "reflect.Pointer|reflect.Ptr"
     - linters:
         - gocritic

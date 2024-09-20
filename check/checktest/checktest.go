@@ -29,6 +29,7 @@ import (
 	"buf.build/go/bufplugin/check"
 	"buf.build/go/bufplugin/descriptor"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
+	"buf.build/go/bufplugin/option"
 	"github.com/bufbuild/protocompile"
 	"github.com/bufbuild/protocompile/linker"
 	"github.com/bufbuild/protocompile/parser"
@@ -121,7 +122,7 @@ func (r *RequestSpec) ToRequest(ctx context.Context) (check.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	options, err := check.NewOptions(r.Options)
+	options, err := option.NewOptions(r.Options)
 	if err != nil {
 		return nil, err
 	}

@@ -22,6 +22,7 @@ import (
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
 	"buf.build/go/bufplugin/descriptor"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
+	"buf.build/go/bufplugin/option"
 )
 
 const checkRuleIDPageSize = 250
@@ -45,7 +46,7 @@ type Request interface {
 	// Options contains any options passed to the plugin.
 	//
 	// Will never be nil, but may have no values.
-	Options() Options
+	Options() option.Options
 	// RuleIDs returns the specific IDs the of Rules to use.
 	//
 	// If empty, all default Rules will be used.
@@ -89,7 +90,7 @@ func WithAgainstFileDescriptors(againstFileDescriptors []descriptor.FileDescript
 }
 
 // WithOption adds the given Options to the Request.
-func WithOptions(options Options) RequestOption {
+func WithOptions(options option.Options) RequestOption {
 	return func(requestOptions *requestOptions) {
 		requestOptions.options = options
 	}
@@ -115,7 +116,7 @@ func RequestForProtoRequest(protoRequest *checkv1.CheckRequest) (Request, error)
 	if err != nil {
 		return nil, err
 	}
-	options, err := OptionsForProtoOptions(protoRequest.GetOptions())
+	options, err := option.OptionsForProtoOptions(protoRequest.GetOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +133,7 @@ func RequestForProtoRequest(protoRequest *checkv1.CheckRequest) (Request, error)
 type request struct {
 	fileDescriptors        []descriptor.FileDescriptor
 	againstFileDescriptors []descriptor.FileDescriptor
-	options                Options
+	options                option.Options
 	ruleIDs                []string
 }
 
@@ -145,7 +146,7 @@ func newRequest(
 		option(requestOptions)
 	}
 	if requestOptions.options == nil {
-		requestOptions.options = emptyOptions
+		requestOptions.options = option.EmptyOptions
 	}
 	if err := validateNoDuplicateRuleOrCategoryIDs(requestOptions.ruleIDs); err != nil {
 		return nil, err
@@ -173,7 +174,7 @@ func (r *request) AgainstFileDescriptors() []descriptor.FileDescriptor {
 	return slices.Clone(r.againstFileDescriptors)
 }
 
-func (r *request) Options() Options {
+func (r *request) Options() option.Options {
 	return r.options
 }
 
@@ -187,7 +188,7 @@ func (r *request) toProtos() ([]*checkv1.CheckRequest, error) {
 	}
 	protoFileDescriptors := xslices.Map(r.fileDescriptors, descriptor.FileDescriptor.ToProto)
 	protoAgainstFileDescriptors := xslices.Map(r.againstFileDescriptors, descriptor.FileDescriptor.ToProto)
-	protoOptions, err := r.options.toProto()
+	protoOptions, err := r.options.ToProto()
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +242,7 @@ func fileNameToFileDescriptorForFileDescriptors(fileDescriptors []descriptor.Fil
 
 type requestOptions struct {
 	againstFileDescriptors []descriptor.FileDescriptor
-	options                Options
+	options                option.Options
 	ruleIDs                []string
 }
 

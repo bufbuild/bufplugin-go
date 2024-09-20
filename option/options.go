@@ -21,7 +21,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package check
+package option
 
 import (
 	"errors"
@@ -31,7 +31,8 @@ import (
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
 )
 
-var emptyOptions = newOptionsNoValidate(nil)
+// EmptyOptions is an instance of Options with no keys.
+var EmptyOptions = newOptionsNoValidate(nil)
 
 // Options are key/values that can control the behavior of a RuleHandler,
 // and can control the value of the Purpose string of the Rule.
@@ -67,7 +68,8 @@ type Options interface {
 	// The range order is not deterministic.
 	Range(f func(key string, value any))
 
-	toProto() ([]*checkv1.Option, error)
+	// ToProto converts the Options to its Protobuf representation.
+	ToProto() ([]*checkv1.Option, error)
 
 	isOption()
 }
@@ -239,7 +241,7 @@ func (o *options) Range(f func(key string, value any)) {
 	}
 }
 
-func (o *options) toProto() ([]*checkv1.Option, error) {
+func (o *options) ToProto() ([]*checkv1.Option, error) {
 	if o == nil {
 		return nil, nil
 	}
