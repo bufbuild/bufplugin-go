@@ -71,7 +71,7 @@ func (s CheckServiceSpecBuilder) Build() (pluginrpc.Spec, error) {
 
 // CheckServiceClient is a client for the buf.plugin.check.v1.CheckService service.
 type CheckServiceClient interface {
-	// Check a set of Files for failures.
+	// Check a set of FileDescriptors for failures.
 	//
 	// All Annotations returned will have an ID that is contained within a Rule listed by ListRules.
 	Check(context.Context, *v1.CheckRequest, ...pluginrpc.CallOption) (*v1.CheckResponse, error)
@@ -90,7 +90,7 @@ func NewCheckServiceClient(client pluginrpc.Client) (CheckServiceClient, error) 
 
 // CheckServiceHandler is an implementation of the buf.plugin.check.v1.CheckService service.
 type CheckServiceHandler interface {
-	// Check a set of Files for failures.
+	// Check a set of FileDescriptors for failures.
 	//
 	// All Annotations returned will have an ID that is contained within a Rule listed by ListRules.
 	Check(context.Context, *v1.CheckRequest) (*v1.CheckResponse, error)
@@ -102,7 +102,7 @@ type CheckServiceHandler interface {
 
 // CheckServiceServer serves the buf.plugin.check.v1.CheckService service.
 type CheckServiceServer interface {
-	// Check a set of Files for failures.
+	// Check a set of FileDescriptors for failures.
 	//
 	// All Annotations returned will have an ID that is contained within a Rule listed by ListRules.
 	Check(context.Context, pluginrpc.HandleEnv, ...pluginrpc.HandleOption) error
