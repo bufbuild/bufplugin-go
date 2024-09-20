@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
+	descriptorv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/descriptor/v1"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -40,7 +41,7 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 	_, err = checkServiceHandler.Check(
 		context.Background(),
 		&checkv1.CheckRequest{
-			Files: []*checkv1.File{
+			FileDescriptors: []*descriptorv1.FileDescriptor{
 				{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name:           proto.String("foo.proto"),
@@ -48,7 +49,7 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 					},
 				},
 			},
-			AgainstFiles: []*checkv1.File{
+			AgainstFileDescriptors: []*descriptorv1.FileDescriptor{
 				{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name:           proto.String("foo.proto"),
@@ -63,7 +64,7 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 	_, err = checkServiceHandler.Check(
 		context.Background(),
 		&checkv1.CheckRequest{
-			Files: []*checkv1.File{
+			FileDescriptors: []*descriptorv1.FileDescriptor{
 				{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name:           proto.String("foo.proto"),
@@ -86,7 +87,7 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 	_, err = checkServiceHandler.Check(
 		context.Background(),
 		&checkv1.CheckRequest{
-			Files: []*checkv1.File{
+			FileDescriptors: []*descriptorv1.FileDescriptor{
 				{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name:           proto.String("foo.proto"),
@@ -94,7 +95,7 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 					},
 				},
 			},
-			AgainstFiles: []*checkv1.File{
+			AgainstFileDescriptors: []*descriptorv1.FileDescriptor{
 				{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name:           proto.String("bar.proto"),

@@ -108,11 +108,11 @@ func WithRuleIDs(ruleIDs ...string) RequestOption {
 
 // RequestForProtoRequest returns a new Request for the given checkv1.Request.
 func RequestForProtoRequest(protoRequest *checkv1.CheckRequest) (Request, error) {
-	fileDescriptors, err := descriptor.FileDescriptorsForProtoFileDescriptors(protoRequest.GetFiles())
+	fileDescriptors, err := descriptor.FileDescriptorsForProtoFileDescriptors(protoRequest.GetFileDescriptors())
 	if err != nil {
 		return nil, err
 	}
-	againstFileDescriptors, err := descriptor.FileDescriptorsForProtoFileDescriptors(protoRequest.GetAgainstFiles())
+	againstFileDescriptors, err := descriptor.FileDescriptorsForProtoFileDescriptors(protoRequest.GetAgainstFileDescriptors())
 	if err != nil {
 		return nil, err
 	}
@@ -195,9 +195,9 @@ func (r *request) toProtos() ([]*checkv1.CheckRequest, error) {
 	if len(r.ruleIDs) == 0 {
 		return []*checkv1.CheckRequest{
 			{
-				Files:        protoFileDescriptors,
-				AgainstFiles: protoAgainstFileDescriptors,
-				Options:      protoOptions,
+				FileDescriptors:        protoFileDescriptors,
+				AgainstFileDescriptors: protoAgainstFileDescriptors,
+				Options:                protoOptions,
 			},
 		}, nil
 	}
@@ -211,10 +211,10 @@ func (r *request) toProtos() ([]*checkv1.CheckRequest, error) {
 		checkRequests = append(
 			checkRequests,
 			&checkv1.CheckRequest{
-				Files:        protoFileDescriptors,
-				AgainstFiles: protoAgainstFileDescriptors,
-				Options:      protoOptions,
-				RuleIds:      r.ruleIDs[start:end],
+				FileDescriptors:        protoFileDescriptors,
+				AgainstFileDescriptors: protoAgainstFileDescriptors,
+				Options:                protoOptions,
+				RuleIds:                r.ruleIDs[start:end],
 			},
 		)
 	}

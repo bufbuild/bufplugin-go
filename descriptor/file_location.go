@@ -17,7 +17,7 @@ package descriptor
 import (
 	"slices"
 
-	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
+	descriptorv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/descriptor/v1"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -47,7 +47,7 @@ type FileLocation interface {
 	// LeadingDetachedComments returns any leading detached comments, if known.
 	LeadingDetachedComments() []string
 	// ToProto converts the FileLocation to its Protobuf representation.
-	ToProto() *checkv1.Location
+	ToProto() *descriptorv1.FileLocation
 
 	unclonedSourcePath() protoreflect.SourcePath
 	unclonedLeadingDetachedComments() []string
@@ -109,11 +109,11 @@ func (l *fileLocation) LeadingDetachedComments() []string {
 	return slices.Clone(l.sourceLocation.LeadingDetachedComments)
 }
 
-func (l *fileLocation) ToProto() *checkv1.Location {
+func (l *fileLocation) ToProto() *descriptorv1.FileLocation {
 	if l == nil {
 		return nil
 	}
-	return &checkv1.Location{
+	return &descriptorv1.FileLocation{
 		FileName:   l.fileDescriptor.Protoreflect().Path(),
 		SourcePath: l.sourceLocation.Path,
 	}

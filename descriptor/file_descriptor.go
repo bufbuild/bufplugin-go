@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"slices"
 
-	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
+	descriptorv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/descriptor/v1"
 	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -65,17 +65,17 @@ type FileDescriptor interface {
 	UnusedDependencyIndexes() []int32
 
 	// ToProto converts the FileDescriptor to its Protobuf representation.
-	ToProto() *checkv1.File
+	ToProto() *descriptorv1.FileDescriptor
 
 	isFileDescriptor()
 }
 
-// FileDescriptorsForProtoFileDescriptors returns a new slice of FileDescriptors for the given checkv1.FileDescriptors.
-func FileDescriptorsForProtoFileDescriptors(protoFileDescriptors []*checkv1.File) ([]FileDescriptor, error) {
+// FileDescriptorsForProtoFileDescriptors returns a new slice of FileDescriptors for the given descriptorv1.FileDescriptorDescriptors.
+func FileDescriptorsForProtoFileDescriptors(protoFileDescriptors []*descriptorv1.FileDescriptor) ([]FileDescriptor, error) {
 	if len(protoFileDescriptors) == 0 {
 		return nil, nil
 	}
-	fileNameToProtoFileDescriptor := make(map[string]*checkv1.File, len(protoFileDescriptors))
+	fileNameToProtoFileDescriptor := make(map[string]*descriptorv1.FileDescriptor, len(protoFileDescriptors))
 	fileDescriptorProtos := make([]*descriptorpb.FileDescriptorProto, len(protoFileDescriptors))
 	for i, protoFileDescriptor := range protoFileDescriptors {
 		fileDescriptorProto := protoFileDescriptor.GetFileDescriptorProto()
@@ -177,11 +177,11 @@ func (f *fileDescriptor) UnusedDependencyIndexes() []int32 {
 	return slices.Clone(f.unusedDependencyIndexes)
 }
 
-func (f *fileDescriptor) ToProto() *checkv1.File {
+func (f *fileDescriptor) ToProto() *descriptorv1.FileDescriptor {
 	if f == nil {
 		return nil
 	}
-	return &checkv1.File{
+	return &descriptorv1.FileDescriptor{
 		FileDescriptorProto: f.fileDescriptorProto,
 		IsImport:            f.isImport,
 		IsSyntaxUnspecified: f.isSyntaxUnspecified,

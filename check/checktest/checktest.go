@@ -25,7 +25,7 @@ import (
 	"strconv"
 	"testing"
 
-	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
+	descriptorv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/descriptor/v1"
 	"buf.build/go/bufplugin/check"
 	"buf.build/go/bufplugin/descriptor"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
@@ -353,7 +353,7 @@ func compile(ctx context.Context, dirPaths []string, filePaths []string) ([]desc
 	}
 	fileDescriptorSet := fileDescriptorSetForFileDescriptors(files)
 
-	protoFileDescriptors := make([]*checkv1.File, len(fileDescriptorSet.GetFile()))
+	protoFileDescriptors := make([]*descriptorv1.FileDescriptor, len(fileDescriptorSet.GetFile()))
 	for i, fileDescriptorProto := range fileDescriptorSet.GetFile() {
 		_, isNotImport := toSlashFilePathMap[fileDescriptorProto.GetName()]
 		_, isSyntaxUnspecified := syntaxUnspecifiedFilePaths[fileDescriptorProto.GetName()]
@@ -361,7 +361,7 @@ func compile(ctx context.Context, dirPaths []string, filePaths []string) ([]desc
 			fileDescriptorProto,
 			filePathToUnusedDependencyFilePaths[fileDescriptorProto.GetName()],
 		)
-		protoFileDescriptors[i] = &checkv1.File{
+		protoFileDescriptors[i] = &descriptorv1.FileDescriptor{
 			FileDescriptorProto: fileDescriptorProto,
 			IsImport:            !isNotImport,
 			IsSyntaxUnspecified: isSyntaxUnspecified,

@@ -19,6 +19,7 @@ import (
 	"sort"
 
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
+	descriptorv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/descriptor/v1"
 	"buf.build/go/bufplugin/descriptor"
 )
 
@@ -95,19 +96,19 @@ func (a *annotation) toProto() *checkv1.Annotation {
 	if a == nil {
 		return nil
 	}
-	var protoFileLocation *checkv1.Location
+	var protoFileLocation *descriptorv1.FileLocation
 	if a.fileLocation != nil {
 		protoFileLocation = a.fileLocation.ToProto()
 	}
-	var protoAgainstFileLocation *checkv1.Location
+	var protoAgainstFileLocation *descriptorv1.FileLocation
 	if a.againstFileLocation != nil {
 		protoAgainstFileLocation = a.againstFileLocation.ToProto()
 	}
 	return &checkv1.Annotation{
-		RuleId:          a.RuleID(),
-		Message:         a.Message(),
-		Location:        protoFileLocation,
-		AgainstLocation: protoAgainstFileLocation,
+		RuleId:              a.RuleID(),
+		Message:             a.Message(),
+		FileLocation:        protoFileLocation,
+		AgainstFileLocation: protoAgainstFileLocation,
 	}
 }
 

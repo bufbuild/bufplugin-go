@@ -160,12 +160,12 @@ func (c *client) Check(ctx context.Context, request Request, _ ...CheckCallOptio
 				protoAnnotation.GetRuleId(),
 				WithMessage(protoAnnotation.GetMessage()),
 				WithFileNameAndSourcePath(
-					protoAnnotation.GetLocation().GetFileName(),
-					protoAnnotation.GetLocation().GetSourcePath(),
+					protoAnnotation.GetFileLocation().GetFileName(),
+					protoAnnotation.GetFileLocation().GetSourcePath(),
 				),
 				WithAgainstFileNameAndSourcePath(
-					protoAnnotation.GetAgainstLocation().GetFileName(),
-					protoAnnotation.GetAgainstLocation().GetSourcePath(),
+					protoAnnotation.GetAgainstFileLocation().GetFileName(),
+					protoAnnotation.GetAgainstFileLocation().GetSourcePath(),
 				),
 			)
 		}
