@@ -315,20 +315,20 @@ func validateAddAnnotationOptions(addAnnotationOptions *addAnnotationOptions) er
 
 func getFileLocationForAddAnnotationOptions(
 	fileNameToFileDescriptor map[string]descriptor.FileDescriptor,
-	descriptor protoreflect.Descriptor,
+	protoreflectDescriptor protoreflect.Descriptor,
 	fileName string,
 	path protoreflect.SourcePath,
 ) (descriptor.FileLocation, error) {
-	if descriptor != nil {
+	if protoreflectDescriptor != nil {
 		// Technically, ParentFile() can be nil.
-		if protoreflectFileDescriptor := descriptor.ParentFile(); protoreflectFileDescriptor != nil {
+		if protoreflectFileDescriptor := protoreflectDescriptor.ParentFile(); protoreflectFileDescriptor != nil {
 			fileDescriptor, ok := fileNameToFileDescriptor[protoreflectFileDescriptor.Path()]
 			if !ok {
 				return nil, fmt.Errorf("cannot add annotation for unknown file: %q", protoreflectFileDescriptor.Path())
 			}
-			return newLocation(
+			return descriptor.NewFileLocation(
 				fileDescriptor,
-				protoreflectFileDescriptor.SourceLocations().ByDescriptor(descriptor),
+				protoreflectFileDescriptor.SourceLocations().ByDescriptor(protoreflectDescriptor),
 			), nil
 		}
 		return nil, nil
@@ -342,7 +342,7 @@ func getFileLocationForAddAnnotationOptions(
 		if len(path) > 0 {
 			sourceLocation = fileDescriptor.Protoreflect().SourceLocations().ByPath(path)
 		}
-		return newLocation(fileDescriptor, sourceLocation), nil
+		return descriptor.NewFileLocation(fileDescriptor, sourceLocation), nil
 	}
 	return nil, nil
 }

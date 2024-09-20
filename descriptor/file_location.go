@@ -55,21 +55,22 @@ type FileLocation interface {
 	isFileLocation()
 }
 
+// NewFileLocation returns a new FileLocation.
+func NewFileLocation(
+	fileDescriptor FileDescriptor,
+	sourceLocation protoreflect.SourceLocation,
+) FileLocation {
+	return &fileLocation{
+		fileDescriptor: fileDescriptor,
+		sourceLocation: sourceLocation,
+	}
+}
+
 // *** PRIVATE ***
 
 type fileLocation struct {
 	fileDescriptor FileDescriptor
 	sourceLocation protoreflect.SourceLocation
-}
-
-func newFileLocation(
-	fileDescriptor FileDescriptor,
-	sourceLocation protoreflect.SourceLocation,
-) *fileLocation {
-	return &fileLocation{
-		fileDescriptor: fileDescriptor,
-		sourceLocation: sourceLocation,
-	}
 }
 
 func (l *fileLocation) FileDescriptor() FileDescriptor {
