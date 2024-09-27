@@ -174,10 +174,16 @@ func (c *client) Check(ctx context.Context, request Request, _ ...CheckCallOptio
 }
 
 func (c *client) ListRules(ctx context.Context, _ ...ListRulesCallOption) ([]Rule, error) {
+	if !c.cacheRulesAndCategories {
+		return c.listRulesUncached(ctx)
+	}
 	return c.rules.Get(ctx)
 }
 
 func (c *client) ListCategories(ctx context.Context, _ ...ListCategoriesCallOption) ([]Category, error) {
+	if !c.cacheRulesAndCategories {
+		return c.listCategoriesUncached(ctx)
+	}
 	return c.categories.Get(ctx)
 }
 
