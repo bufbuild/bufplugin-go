@@ -27,7 +27,9 @@ type Singleton[V any] struct {
 	get   func(context.Context) (V, error)
 	value V
 	err   error
-	once  sync.Once
+	// Storing a bool to not deal with generic zero/nil comparisons.
+	called bool
+	lock   sync.RWMutex
 }
 
 // NewSingleton returns a new Singleton.
@@ -49,8 +51,17 @@ func (s *Singleton[V]) Get(ctx context.Context) (V, error) {
 		var zero V
 		return zero, errors.New("must create singleton with NewSingleton and a non-nil get function")
 	}
-	s.once.Do(func() {
+	s.lock.RLock()
+	if s.called {
+		s.lock.RUnlock()
+		return s.value, s.err
+	}
+	s.lock.RUnlock()
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	if !s.called {
 		s.value, s.err = s.get(ctx)
-	})
+		s.called = true
+	}
 	return s.value, s.err
 }
