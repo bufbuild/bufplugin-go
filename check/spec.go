@@ -41,11 +41,23 @@ type Spec struct {
 	// No IDs can overlap with Rule IDs in Rules.
 	Categories []*CategorySpec
 
+	// TODO: given how common this could be, should ANY plugin implementing the pluginrpc
+	// be able to, optionally, define the License and Doc?
+	// 
+	// https://buf.build/pluginrpc/pluginrpc/docs/main:pluginrpc.v1#pluginrpc.v1.Spec
+	License *LicenseSpec
+	Doc string
+
 	// Before is a function that will be executed before any RuleHandlers are
 	// invoked that returns a new Context and Request. This new Context and
 	// Request will be passed to the RuleHandlers. This allows for any
 	// pre-processing that needs to occur.
 	Before func(ctx context.Context, request Request) (context.Context, Request, error)
+}
+
+type LicenseSpec struct {
+	SPDXLicense spdx.License
+	Text string
 }
 
 // ValidateSpec validates all values on a Spec.
