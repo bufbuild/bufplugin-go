@@ -15,19 +15,40 @@
 package check
 
 import (
+	"buf.build/go/bufplugin/info"
 	"buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
+	checkv1pluginrpc "buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
+	infov1pluginrpc "buf.build/go/bufplugin/internal/gen/buf/plugin/info/v1/v1pluginrpc"
 	"pluginrpc.com/pluginrpc"
 )
 
 // NewServer is a convenience function that creates a new pluginrpc.Server for
-// the given v1pluginrpc.CheckServiceHandler.
+// the given Spec.
 //
-// This registers the Check RPC on the command "check", the ListRules RPC on the command
-// "list-rules", and the ListCategories RPC on the command "list-categories". No options
-// are passed to any of the types necessary to create this Server. If further customization
-// is necessary, this can be done manually.
-func NewCheckServiceServer(checkServiceHandler v1pluginrpc.CheckServiceHandler) (pluginrpc.Server, error) {
-	spec, err := v1pluginrpc.CheckServiceSpecBuilder{
+// This registers:
+//
+// - The Check RPC on the command "check".
+// - The ListRules RPC on the command "list-rules".
+// - The ListCategories RPC on the command "list-categories".
+// - The GetPluginInfo RPC on the command "info" (if spec.Info is present).
+func NewServer(spec *Spec, options ...ServerOption) (pluginrpc.Server, error) {
+	serverOptions := newServerOptions()
+	for _, option := range options {
+		option(serverOptions)
+	}
+
+	checkServiceHandler, err := NewCheckServiceHandler(spec, CheckServiceHandlerWithParallelism(serverOptions.parallelism))
+	if err != nil {
+		return nil, err
+	}
+	var pluginInfoServiceHandler infov1pluginrpc.PluginInfoServiceHandler
+	if spec.Info != nil {
+		pluginInfoServiceHandler, err = info.NewPluginInfoServiceHandler(spec.Info)
+		if err != nil {
+			return nil, err
+		}
+	}
+	pluginrpcSpec, err := checkv1pluginrpc.CheckServiceSpecBuilder{
 		Check:          []pluginrpc.ProcedureOption{pluginrpc.ProcedureWithArgs("check")},
 		ListRules:      []pluginrpc.ProcedureOption{pluginrpc.ProcedureWithArgs("list-rules")},
 		ListCategories: []pluginrpc.ProcedureOption{pluginrpc.ProcedureWithArgs("list-categories")},
@@ -35,8 +56,54 @@ func NewCheckServiceServer(checkServiceHandler v1pluginrpc.CheckServiceHandler) 
 	if err != nil {
 		return nil, err
 	}
+	if pluginInfoServiceHandler != nil {
+		pluginrpcInfoSpec, err := infov1pluginrpc.PluginInfoServiceSpecBuilder{
+			GetPluginInfo: []pluginrpc.ProcedureOption{pluginrpc.ProcedureWithArgs("info")},
+		}.Build()
+		if err != nil {
+			return nil, err
+		}
+		pluginrpcSpec, err = pluginrpc.MergeSpecs(pluginrpcSpec, pluginrpcInfoSpec)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	serverRegistrar := pluginrpc.NewServerRegistrar()
-	checkServiceServer := v1pluginrpc.NewCheckServiceServer(pluginrpc.NewHandler(spec), checkServiceHandler)
-	v1pluginrpc.RegisterCheckServiceServer(serverRegistrar, checkServiceServer)
-	return pluginrpc.NewServer(spec, serverRegistrar)
+	handler := pluginrpc.NewHandler(pluginrpcSpec)
+	checkServiceServer := v1pluginrpc.NewCheckServiceServer(handler, checkServiceHandler)
+	checkv1pluginrpc.RegisterCheckServiceServer(serverRegistrar, checkServiceServer)
+	if pluginInfoServiceHandler != nil {
+		pluginInfoServiceServer := infov1pluginrpc.NewPluginInfoServiceServer(handler, pluginInfoServiceHandler)
+		infov1pluginrpc.RegisterPluginInfoServiceServer(serverRegistrar, pluginInfoServiceServer)
+	}
+
+	return pluginrpc.NewServer(pluginrpcSpec, serverRegistrar)
+}
+
+// ServerOption is an option for Server.
+type ServerOption func(*serverOptions)
+
+// ServerWithParallelism returns a new ServerOption that sets the parallelism
+// by which Rules will be run.
+//
+// If this is set to a value >= 1, this many concurrent Rules can be run at the same time.
+// A value of 0 indicates the default behavior, which is to use runtime.GOMAXPROCS(0).
+//
+// A value if < 0 has no effect.
+func ServerWithParallelism(parallelism int) ServerOption {
+	return func(serverOptions *serverOptions) {
+		if parallelism < 0 {
+			parallelism = 0
+		}
+		serverOptions.parallelism = parallelism
+	}
+}
+
+type serverOptions struct {
+	parallelism int
+}
+
+func newServerOptions() *serverOptions {
+	return &serverOptions{}
 }

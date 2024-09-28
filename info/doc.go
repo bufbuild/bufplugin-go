@@ -17,6 +17,8 @@ package info
 import (
 	"errors"
 	"fmt"
+
+	infov1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/info/v1"
 )
 
 // Doc contains the documentation for a plugin.
@@ -38,6 +40,8 @@ type Doc interface {
 	//
 	// Optional.
 	Long() string
+
+	toProto() *infov1.Doc
 
 	isDoc()
 }
@@ -77,4 +81,24 @@ func (d *doc) Long() string {
 	return d.long
 }
 
+func (d *doc) toProto() *infov1.Doc {
+	if d == nil {
+		return nil
+	}
+	return &infov1.Doc{
+		Short: d.short,
+		Long:  d.long,
+	}
+}
+
 func (*doc) isDoc() {}
+
+func docForProtoDoc(protoDoc *infov1.Doc) (Doc, error) {
+	if protoDoc == nil {
+		return nil, nil
+	}
+	return newDoc(
+		protoDoc.GetShort(),
+		protoDoc.GetLong(),
+	)
+}

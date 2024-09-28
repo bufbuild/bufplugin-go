@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"net/url"
 
+	infov1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/info/v1"
 	"buf.build/go/spdx"
 )
 
@@ -43,6 +44,8 @@ type License interface {
 	// At most one of Text and URL will be set.
 	// Must be absolute if set.
 	URL() *url.URL
+
+	toProto() *infov1.License
 
 	isLicense()
 }
@@ -90,4 +93,43 @@ func (l *license) URL() *url.URL {
 	return l.url
 }
 
+func (l *license) toProto() *infov1.License {
+	if l == nil {
+		return nil
+	}
+	protoLicense := &infov1.License{
+		SpdxLicenseId: l.SPDXLicenseID(),
+	}
+	if l.text != "" {
+		protoLicense.Source = &infov1.License_Text{
+			Text: l.text,
+		}
+	} else if l.url != nil {
+		protoLicense.Source = &infov1.License_Url{
+			Url: l.url.String(),
+		}
+	}
+	return protoLicense
+}
+
 func (*license) isLicense() {}
+
+func licenseForProtoLicense(protoLicense *infov1.License) (License, error) {
+	if protoLicense == nil {
+		return nil, nil
+	}
+	text := protoLicense.GetText()
+	var uri *url.URL
+	if urlString := protoLicense.GetUrl(); urlString != "" {
+		var err error
+		uri, err = url.Parse(urlString)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return newLicense(
+		protoLicense.GetSpdxLicenseId(),
+		text,
+		uri,
+	)
+}

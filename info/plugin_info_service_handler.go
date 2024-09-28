@@ -35,9 +35,7 @@ type PluginInfoServiceHandlerOption func(*pluginInfoServiceHandlerOptions)
 // *** PRIVATE ***
 
 type pluginInfoServiceHandler struct {
-	protoPluginInfo *infov1.PluginInfo
-	spec            *Spec
-	validator       *protovalidate.Validator
+	getPluginInfoResponse *infov1.GetPluginInfoResponse
 }
 
 func newPluginInfoServiceHandler(spec *Spec, _ ...PluginInfoServiceHandlerOption) (*pluginInfoServiceHandler, error) {
@@ -47,22 +45,23 @@ func newPluginInfoServiceHandler(spec *Spec, _ ...PluginInfoServiceHandlerOption
 		return nil, err
 	}
 	protoPluginInfo := pluginInfo.toProto()
+	getPluginInfoResponse := &infov1.GetPluginInfoResponse{
+		PluginInfo: protoPluginInfo,
+	}
 	validator, err := protovalidate.New()
 	if err != nil {
 		return nil, err
 	}
-	if err := validator.Validate(protoPluginInfo); err != nil {
+	if err := validator.Validate(getPluginInfoResponse); err != nil {
 		return nil, err
 	}
 	return &pluginInfoServiceHandler{
-		protoPluginInfo: protoPluginInfo,
+		getPluginInfoResponse: getPluginInfoResponse,
 	}, nil
 }
 
 func (c *pluginInfoServiceHandler) GetPluginInfo(context.Context, *infov1.GetPluginInfoRequest) (*infov1.GetPluginInfoResponse, error) {
-	return &infov1.GetPluginInfoResponse{
-		PluginInfo: c.protoPluginInfo,
-	}, nil
+	return c.getPluginInfoResponse, nil
 }
 
 type pluginInfoServiceHandlerOptions struct{}

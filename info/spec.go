@@ -78,7 +78,7 @@ func ValidateSpec(spec *Spec) error {
 		return newValidateSpecError("only one of LicenseText and LicenseURL can be set")
 	}
 	if spec.LicenseURL != "" {
-		if err := validateSpecAbsoluteURL(spec.URL); err != nil {
+		if err := validateSpecAbsoluteURL(spec.LicenseURL); err != nil {
 			return err
 		}
 	}

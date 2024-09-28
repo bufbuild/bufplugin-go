@@ -45,6 +45,8 @@ type Spec struct {
 	// Info contains information about a plugin.
 	//
 	// Optional.
+	//
+	// If not set, the resulting server will not implement the PluginInfoService.
 	Info *info.Spec
 
 	// Before is a function that will be executed before any RuleHandlers are

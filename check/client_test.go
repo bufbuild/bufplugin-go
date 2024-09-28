@@ -28,7 +28,7 @@ func TestClientListRulesCategoriesSimple(t *testing.T) {
 	t.Parallel()
 
 	testClientListRulesCategoriesSimple(t)
-	testClientListRulesCategoriesSimple(t, ClientWithCacheRulesAndCategories())
+	testClientListRulesCategoriesSimple(t, ClientWithCaching())
 }
 
 func testClientListRulesCategoriesSimple(t *testing.T, options ...ClientForSpecOption) {

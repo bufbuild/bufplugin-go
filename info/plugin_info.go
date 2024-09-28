@@ -129,33 +129,34 @@ func (p *pluginInfo) toProto() *infov1.PluginInfo {
 	if p.url != nil {
 		urlString = p.url.String()
 	}
-	var protoLicense *infov1.License
-	if p.license != nil {
-		protoLicense = &infov1.License{
-			SpdxLicenseId: p.license.SPDXLicenseID(),
-		}
-		if licenseText := p.license.Text(); licenseText != "" {
-			protoLicense.Source = &infov1.License_Text{
-				Text: licenseText,
-			}
-		} else if licenseURL := p.license.URL(); licenseURL != nil {
-			protoLicense.Source = &infov1.License_Url{
-				Url: licenseURL.String(),
-			}
-		}
-	}
-	var protoDoc *infov1.Doc
-	if p.doc != nil {
-		protoDoc = &infov1.Doc{
-			Short: p.doc.Short(),
-			Long:  p.doc.Long(),
-		}
-	}
 	return &infov1.PluginInfo{
 		Url:     urlString,
-		License: protoLicense,
-		Doc:     protoDoc,
+		License: p.license.toProto(),
+		Doc:     p.doc.toProto(),
 	}
 }
 
 func (*pluginInfo) isPluginInfo() {}
+
+func pluginInfoForProtoPluginInfo(protoPluginInfo *infov1.PluginInfo) (PluginInfo, error) {
+	if protoPluginInfo == nil {
+		return nil, nil
+	}
+	var uri *url.URL
+	if urlString := protoPluginInfo.GetUrl(); urlString != "" {
+		var err error
+		uri, err = url.Parse(urlString)
+		if err != nil {
+			return nil, err
+		}
+	}
+	license, err := licenseForProtoLicense(protoPluginInfo.GetLicense())
+	if err != nil {
+		return nil, err
+	}
+	doc, err := docForProtoDoc(protoPluginInfo.GetDoc())
+	if err != nil {
+		return nil, err
+	}
+	return newPluginInfo(uri, license, doc)
+}
