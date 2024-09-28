@@ -37,6 +37,7 @@ import (
 	"buf.build/go/bufplugin/check"
 	"buf.build/go/bufplugin/check/checkutil"
 	"buf.build/go/bufplugin/descriptor"
+	"buf.build/go/bufplugin/info"
 )
 
 // syntaxSpecifiedRuleID is the Rule ID of the syntax specified Rule.
@@ -59,6 +60,12 @@ var (
 	spec = &check.Spec{
 		Rules: []*check.RuleSpec{
 			syntaxSpecifiedRuleSpec,
+		},
+		// Optional.
+		Info: &info.Spec{
+			URL:           "https://github.com/bufbuild/bufplugin-go",
+			SPDXLicenseID: "apache-2.0",
+			LicenseURL:    "https://github.com/bufbuild/bufplugin-go/blob/main/LICENSE",
 		},
 	}
 )

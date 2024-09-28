@@ -17,6 +17,7 @@ package check
 import (
 	"context"
 
+	"buf.build/go/bufplugin/info"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
 )
 
@@ -40,6 +41,13 @@ type Spec struct {
 	//
 	// No IDs can overlap with Rule IDs in Rules.
 	Categories []*CategorySpec
+
+	// Info contains information about a plugin.
+	//
+	// Optional.
+	//
+	// If not set, the resulting server will not implement the PluginInfoService.
+	Info *info.Spec
 
 	// Before is a function that will be executed before any RuleHandlers are
 	// invoked that returns a new Context and Request. This new Context and
@@ -69,5 +77,13 @@ func ValidateSpec(spec *Spec) error {
 	if err := validateRuleSpecs(spec.Rules, categoryIDMap); err != nil {
 		return err
 	}
-	return validateCategorySpecs(spec.Categories, spec.Rules)
+	if err := validateCategorySpecs(spec.Categories, spec.Rules); err != nil {
+		return err
+	}
+	if spec.Info != nil {
+		if err := info.ValidateSpec(spec.Info); err != nil {
+			return err
+		}
+	}
+	return nil
 }

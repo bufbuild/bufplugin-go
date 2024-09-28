@@ -36,6 +36,7 @@ linters:
     - ireturn           # "accept interfaces, return structs" isn't ironclad
     - lll               # don't want hard limits for line length
     - maintidx          # covered by gocyclo
+    - nilnil            # allow this
     - nlreturn          # generous whitespace violates house style
     - testifylint       # does not want us to use assert
     - testpackage       # internal tests are fine
@@ -66,12 +67,6 @@ issues:
       path: check/location.go
       text: "commentFormatting"
     - linters:
-        - nilnil
-      path: check/rule.go
-    - linters:
-        - nilnil
-      path: check/response_writer.go
-    - linters:
         - unparam
       path: check/category_spec.go
     - linters:
@@ -80,9 +75,6 @@ issues:
     - linters:
         - unparam
       path: check/response.go
-    - linters:
-        - nilnil
-      path: check/checktest/checktest.go
     - linters:
         - varnamelen
       path: check/internal/example

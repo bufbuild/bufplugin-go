@@ -16,9 +16,9 @@ package check
 
 import (
 	"context"
-	"fmt"
 
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
+	"buf.build/go/bufplugin/info"
 	"buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
 	"buf.build/go/bufplugin/internal/pkg/cache"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
@@ -31,7 +31,11 @@ const (
 )
 
 // Client is a client for a custom lint or breaking change plugin.
+//
+// All calls with pluginrpc.Error with CodeUnimplemented if any procedure is not implemented.
 type Client interface {
+	info.Client
+
 	// Check invokes a check using the plugin..
 	Check(ctx context.Context, request Request, options ...CheckCallOption) (Response, error)
 	// ListRules lists all available Rules from the plugin.
@@ -54,7 +58,7 @@ func NewClient(pluginrpcClient pluginrpc.Client, options ...ClientOption) Client
 	for _, option := range options {
 		option.applyToClient(clientOptions)
 	}
-	return newClient(pluginrpcClient, clientOptions.cacheRulesAndCategories)
+	return newClient(pluginrpcClient, clientOptions.caching)
 }
 
 // ClientOption is an option for a new Client.
@@ -64,12 +68,16 @@ type ClientOption interface {
 	applyToClient(opts *clientOptions)
 }
 
-// ClientWithCacheRulesAndCategories returns a new ClientOption that will result in the Rules from
-// ListRules and the Categories from ListCategories being cached.
+// ClientWithCaching returns a new ClientOption that will result caching for items
+// expected to be static:
 //
-// The default is to not cache Rules or Categories.
-func ClientWithCacheRulesAndCategories() ClientOption {
-	return clientWithCacheRulesAndCategoriesOption{}
+// - The Rules from ListRules.
+// - The Categories from ListCategories.
+// - PluginInfo from GetPluginInfo.
+//
+// The default is to not cache.
+func ClientWithCaching() ClientOption {
+	return clientWithCachingOption{}
 }
 
 // NewClientForSpec return a new Client that directly uses the given Spec.
@@ -80,19 +88,15 @@ func NewClientForSpec(spec *Spec, options ...ClientForSpecOption) (Client, error
 	for _, option := range options {
 		option.applyToClientForSpec(clientForSpecOptions)
 	}
-	checkServiceHandler, err := NewCheckServiceHandler(spec)
-	if err != nil {
-		return nil, err
-	}
-	checkServiceServer, err := NewCheckServiceServer(checkServiceHandler)
+	server, err := NewServer(spec)
 	if err != nil {
 		return nil, err
 	}
 	return newClient(
 		pluginrpc.NewClient(
-			pluginrpc.NewServerRunner(checkServiceServer),
+			pluginrpc.NewServerRunner(server),
 		),
-		clientForSpecOptions.cacheRulesAndCategories,
+		clientForSpecOptions.caching,
 	), nil
 }
 
@@ -113,9 +117,11 @@ type ListCategoriesCallOption func(*listCategoriesCallOptions)
 // *** PRIVATE ***
 
 type client struct {
+	info.Client
+
 	pluginrpcClient pluginrpc.Client
 
-	cacheRulesAndCategories bool
+	caching bool
 
 	// Singleton ordering: rules -> categories -> checkServiceClient
 	rules              *cache.Singleton[[]Rule]
@@ -125,11 +131,16 @@ type client struct {
 
 func newClient(
 	pluginrpcClient pluginrpc.Client,
-	cacheRulesAndCategories bool,
+	caching bool,
 ) *client {
+	var infoClientOptions []info.ClientOption
+	if caching {
+		infoClientOptions = append(infoClientOptions, info.ClientWithCaching())
+	}
 	client := &client{
-		pluginrpcClient:         pluginrpcClient,
-		cacheRulesAndCategories: cacheRulesAndCategories,
+		Client:          info.NewClient(pluginrpcClient, infoClientOptions...),
+		pluginrpcClient: pluginrpcClient,
+		caching:         caching,
 	}
 	client.rules = cache.NewSingleton(client.listRulesUncached)
 	client.categories = cache.NewSingleton(client.listCategoriesUncached)
@@ -174,14 +185,14 @@ func (c *client) Check(ctx context.Context, request Request, _ ...CheckCallOptio
 }
 
 func (c *client) ListRules(ctx context.Context, _ ...ListRulesCallOption) ([]Rule, error) {
-	if !c.cacheRulesAndCategories {
+	if !c.caching {
 		return c.listRulesUncached(ctx)
 	}
 	return c.rules.Get(ctx)
 }
 
 func (c *client) ListCategories(ctx context.Context, _ ...ListCategoriesCallOption) ([]Category, error) {
-	if !c.cacheRulesAndCategories {
+	if !c.caching {
 		return c.listCategoriesUncached(ctx)
 	}
 	return c.categories.Get(ctx)
@@ -285,7 +296,7 @@ func (c *client) getCheckServiceClientUncached(ctx context.Context) (v1pluginrpc
 		v1pluginrpc.CheckServiceListCategoriesPath,
 	} {
 		if spec.ProcedureForPath(procedurePath) == nil {
-			return nil, fmt.Errorf("plugin spec not implemented: RPC %q not found", procedurePath)
+			return nil, pluginrpc.NewErrorf(pluginrpc.CodeUnimplemented, "procedure unimplemented: %q", procedurePath)
 		}
 	}
 	return v1pluginrpc.NewCheckServiceClient(c.pluginrpcClient)
@@ -294,7 +305,7 @@ func (c *client) getCheckServiceClientUncached(ctx context.Context) (v1pluginrpc
 func (*client) isClient() {}
 
 type clientOptions struct {
-	cacheRulesAndCategories bool
+	caching bool
 }
 
 func newClientOptions() *clientOptions {
@@ -302,21 +313,21 @@ func newClientOptions() *clientOptions {
 }
 
 type clientForSpecOptions struct {
-	cacheRulesAndCategories bool
+	caching bool
 }
 
 func newClientForSpecOptions() *clientForSpecOptions {
 	return &clientForSpecOptions{}
 }
 
-type clientWithCacheRulesAndCategoriesOption struct{}
+type clientWithCachingOption struct{}
 
-func (clientWithCacheRulesAndCategoriesOption) applyToClient(clientOptions *clientOptions) {
-	clientOptions.cacheRulesAndCategories = true
+func (clientWithCachingOption) applyToClient(clientOptions *clientOptions) {
+	clientOptions.caching = true
 }
 
-func (clientWithCacheRulesAndCategoriesOption) applyToClientForSpec(clientForSpecOptions *clientForSpecOptions) {
-	clientForSpecOptions.cacheRulesAndCategories = true
+func (clientWithCachingOption) applyToClientForSpec(clientForSpecOptions *clientForSpecOptions) {
+	clientForSpecOptions.caching = true
 }
 
 type checkCallOptions struct{}

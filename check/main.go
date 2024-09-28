@@ -44,14 +44,10 @@ func Main(spec *Spec, options ...MainOption) {
 	}
 	pluginrpc.Main(
 		func() (pluginrpc.Server, error) {
-			checkServiceHandler, err := NewCheckServiceHandler(
+			return NewServer(
 				spec,
-				CheckServiceHandlerWithParallelism(mainOptions.parallelism),
+				ServerWithParallelism(mainOptions.parallelism),
 			)
-			if err != nil {
-				return nil, err
-			}
-			return NewCheckServiceServer(checkServiceHandler)
 		},
 	)
 }

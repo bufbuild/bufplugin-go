@@ -35,6 +35,7 @@ import (
 
 	"buf.build/go/bufplugin/check"
 	"buf.build/go/bufplugin/check/checkutil"
+	"buf.build/go/bufplugin/info"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -58,6 +59,12 @@ var (
 	spec = &check.Spec{
 		Rules: []*check.RuleSpec{
 			fieldLowerSnakeCaseRuleSpec,
+		},
+		// Optional.
+		Info: &info.Spec{
+			URL:           "https://github.com/bufbuild/bufplugin-go",
+			SPDXLicenseID: "apache-2.0",
+			LicenseURL:    "https://github.com/bufbuild/bufplugin-go/blob/main/LICENSE",
 		},
 	}
 )

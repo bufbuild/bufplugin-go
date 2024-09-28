@@ -20,15 +20,17 @@ import (
 	"slices"
 	"testing"
 
+	"buf.build/go/bufplugin/info"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
 	"github.com/stretchr/testify/require"
+	"pluginrpc.com/pluginrpc"
 )
 
 func TestClientListRulesCategoriesSimple(t *testing.T) {
 	t.Parallel()
 
 	testClientListRulesCategoriesSimple(t)
-	testClientListRulesCategoriesSimple(t, ClientWithCacheRulesAndCategories())
+	testClientListRulesCategoriesSimple(t, ClientWithCaching())
 }
 
 func testClientListRulesCategoriesSimple(t *testing.T, options ...ClientForSpecOption) {
@@ -151,4 +153,57 @@ func testClientListRulesCount(t *testing.T, count int) {
 	for i := 0; i < count; i++ {
 		require.Equal(t, ruleSpecs[i].ID, rules[i].ID())
 	}
+}
+
+func TestPluginInfo(t *testing.T) {
+	t.Parallel()
+
+	client, err := NewClientForSpec(
+		&Spec{
+			Rules: []*RuleSpec{
+				{
+					ID:      "RULE1",
+					Purpose: "Test RULE1.",
+					Type:    RuleTypeLint,
+					Handler: nopRuleHandler,
+				},
+			},
+			Info: &info.Spec{
+				SPDXLicenseID: "apache-2.0",
+				LicenseURL:    "https://foo.com/license",
+			},
+		},
+	)
+	require.NoError(t, err)
+	pluginInfo, err := client.GetPluginInfo(context.Background())
+	require.NoError(t, err)
+	license := pluginInfo.License()
+	require.NotNil(t, license)
+	require.NotNil(t, license.URL())
+	// Case-sensitive.
+	require.Equal(t, "Apache-2.0", license.SPDXLicenseID())
+	require.Equal(t, "https://foo.com/license", license.URL().String())
+}
+
+func TestPluginInfoUnimplemented(t *testing.T) {
+	t.Parallel()
+
+	client, err := NewClientForSpec(
+		&Spec{
+			Rules: []*RuleSpec{
+				{
+					ID:      "RULE1",
+					Purpose: "Test RULE1.",
+					Type:    RuleTypeLint,
+					Handler: nopRuleHandler,
+				},
+			},
+		},
+	)
+	require.NoError(t, err)
+	_, err = client.GetPluginInfo(context.Background())
+	pluginrpcError := &pluginrpc.Error{}
+	require.Error(t, err)
+	require.ErrorAs(t, err, &pluginrpcError)
+	require.Equal(t, pluginrpc.CodeUnimplemented, pluginrpcError.Code())
 }
