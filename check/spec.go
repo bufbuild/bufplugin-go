@@ -78,6 +78,10 @@ func ValidateSpec(spec *Spec) error {
 	if err := validateCategorySpecs(spec.Categories, spec.Rules); err != nil {
 		return err
 	}
-	//return info.ValidateSpec(spec.Info)
+	if spec.Info != nil {
+		if err := info.ValidateSpec(spec.Info); err != nil {
+			return err
+		}
+	}
 	return nil
 }

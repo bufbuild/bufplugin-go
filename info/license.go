@@ -15,7 +15,11 @@
 package info
 
 import (
+	"errors"
+	"fmt"
 	"net/url"
+
+	"buf.build/go/spdx"
 )
 
 // License contains license information about a plugin.
@@ -26,6 +30,9 @@ type License interface {
 	// SPDXLicenseID returns the SPDX license ID.
 	//
 	// Optional.
+	//
+	// Will be a validate SPDX license ID contained within https://spdx.org/licenses
+	// if present.
 	SPDXLicenseID() string
 	// Text returns the raw text of the License.
 	//
@@ -34,6 +41,7 @@ type License interface {
 	// URL returns the URL that contains the License.
 	//
 	// At most one of Text and URL will be set.
+	// Must be absolute if set.
 	URL() *url.URL
 
 	isLicense()
@@ -51,12 +59,23 @@ func newLicense(
 	spdxLicenseID string,
 	text string,
 	url *url.URL,
-) *license {
+) (*license, error) {
+	if spdxLicenseID != "" {
+		if _, ok := spdx.LicenseForID(spdxLicenseID); !ok {
+			return nil, fmt.Errorf("unknown SPDX license ID: %q", spdxLicenseID)
+		}
+	}
+	if text != "" && url != nil {
+		return nil, errors.New("info.License: both text and url are present")
+	}
+	if url != nil && url.Host == "" {
+		return nil, fmt.Errorf("url %v must be absolute", url)
+	}
 	return &license{
 		spdxLicenseID: spdxLicenseID,
 		text:          text,
 		url:           url,
-	}
+	}, nil
 }
 
 func (l *license) SPDXLicenseID() string {

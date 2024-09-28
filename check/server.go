@@ -19,7 +19,7 @@ import (
 	"pluginrpc.com/pluginrpc"
 )
 
-// NewCheckServiceServer is a convenience function that creates a new pluginrpc.Server for
+// NewServer is a convenience function that creates a new pluginrpc.Server for
 // the given v1pluginrpc.CheckServiceHandler.
 //
 // This registers the Check RPC on the command "check", the ListRules RPC on the command

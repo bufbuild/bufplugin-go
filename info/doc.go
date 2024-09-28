@@ -15,6 +15,7 @@
 package info
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -51,11 +52,14 @@ type doc struct {
 func newDoc(
 	short string,
 	long string,
-) *doc {
+) (*doc, error) {
+	if short == "" {
+		return nil, errors.New("info.Doc: short is empty")
+	}
 	return &doc{
 		short: short,
 		long:  long,
-	}
+	}, nil
 }
 
 func (d *doc) String() string {
