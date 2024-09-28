@@ -34,6 +34,9 @@ type Spec struct {
 	//
 	// This must be present in the SPDX license list.
 	// https://spdx.org/licenses
+	//
+	// This can be specified in any case. This package will translate this into
+	// proper casing.
 	SPDXLicenseID string
 	// LicenseText is the raw text of the License.
 	//

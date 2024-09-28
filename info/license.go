@@ -32,7 +32,7 @@ type License interface {
 	//
 	// Optional.
 	//
-	// Will be a validate SPDX license ID contained within https://spdx.org/licenses
+	// Will be a valid SPDX license ID contained within https://spdx.org/licenses
 	// if present.
 	SPDXLicenseID() string
 	// Text returns the raw text of the License.
@@ -59,14 +59,18 @@ type license struct {
 }
 
 func newLicense(
+	// Case-insensitive.
 	spdxLicenseID string,
 	text string,
 	url *url.URL,
 ) (*license, error) {
 	if spdxLicenseID != "" {
-		if _, ok := spdx.LicenseForID(spdxLicenseID); !ok {
+		spdxLicense, ok := spdx.LicenseForID(spdxLicenseID)
+		if !ok {
 			return nil, fmt.Errorf("unknown SPDX license ID: %q", spdxLicenseID)
 		}
+		// Case-sensitive.
+		spdxLicenseID = spdxLicense.ID
 	}
 	if text != "" && url != nil {
 		return nil, errors.New("info.License: both text and url are present")

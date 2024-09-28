@@ -56,6 +56,7 @@ import (
 	"buf.build/go/bufplugin/check"
 	"buf.build/go/bufplugin/check/checkutil"
 	optionv1 "buf.build/go/bufplugin/check/internal/example/gen/acme/option/v1"
+	"buf.build/go/bufplugin/info"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -106,6 +107,12 @@ var (
 		},
 		Categories: []*check.CategorySpec{
 			fieldOptionSafeForMLCategorySpec,
+		},
+		// Optional.
+		Info: &info.Spec{
+			URL:           "https://github.com/bufbuild/bufplugin-go",
+			SPDXLicenseID: "apache-2.0",
+			LicenseURL:    "https://github.com/bufbuild/bufplugin-go/blob/main/LICENSE",
 		},
 	}
 )

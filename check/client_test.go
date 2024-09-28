@@ -169,7 +169,8 @@ func TestPluginInfo(t *testing.T) {
 				},
 			},
 			Info: &info.Spec{
-				LicenseURL: "https://foo.com/license",
+				SPDXLicenseID: "apache-2.0",
+				LicenseURL:    "https://foo.com/license",
 			},
 		},
 	)
@@ -179,6 +180,8 @@ func TestPluginInfo(t *testing.T) {
 	license := pluginInfo.License()
 	require.NotNil(t, license)
 	require.NotNil(t, license.URL())
+	// Case-sensitive.
+	require.Equal(t, "Apache-2.0", license.SPDXLicenseID())
 	require.Equal(t, "https://foo.com/license", license.URL().String())
 }
 
