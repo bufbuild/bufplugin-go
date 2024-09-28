@@ -16,7 +16,6 @@ package check
 
 import (
 	"buf.build/go/bufplugin/info"
-	"buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
 	checkv1pluginrpc "buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
 	infov1pluginrpc "buf.build/go/bufplugin/internal/gen/buf/plugin/info/v1/v1pluginrpc"
 	"pluginrpc.com/pluginrpc"
@@ -71,7 +70,7 @@ func NewServer(spec *Spec, options ...ServerOption) (pluginrpc.Server, error) {
 
 	serverRegistrar := pluginrpc.NewServerRegistrar()
 	handler := pluginrpc.NewHandler(pluginrpcSpec)
-	checkServiceServer := v1pluginrpc.NewCheckServiceServer(handler, checkServiceHandler)
+	checkServiceServer := checkv1pluginrpc.NewCheckServiceServer(handler, checkServiceHandler)
 	checkv1pluginrpc.RegisterCheckServiceServer(serverRegistrar, checkServiceServer)
 	if pluginInfoServiceHandler != nil {
 		pluginInfoServiceServer := infov1pluginrpc.NewPluginInfoServiceServer(handler, pluginInfoServiceHandler)
