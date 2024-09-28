@@ -82,6 +82,7 @@ var (
 			URL:           "https://github.com/bufbuild/bufplugin-go",
 			SPDXLicenseID: "apache-2.0",
 			LicenseURL:    "https://github.com/bufbuild/bufplugin-go/blob/main/LICENSE",
+			DocShort:      `A simple plugin that checks that all google.protobuf.Timestamp fields end in a specific suffix (default is "_time").`,
 		},
 	}
 )

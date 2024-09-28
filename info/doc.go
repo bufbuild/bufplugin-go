@@ -93,7 +93,8 @@ func (d *doc) toProto() *infov1.Doc {
 
 func (*doc) isDoc() {}
 
-func docForProtoDoc(protoDoc *infov1.Doc) (Doc, error) {
+// Need to keep as pointer for Go nil is not nil problem.
+func docForProtoDoc(protoDoc *infov1.Doc) (*doc, error) {
 	if protoDoc == nil {
 		return nil, nil
 	}

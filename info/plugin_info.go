@@ -92,15 +92,17 @@ func NewPluginInfoForSpec(spec *Spec) (PluginInfo, error) {
 // *** PRIVATE ***
 
 type pluginInfo struct {
-	url     *url.URL
-	license License
-	doc     Doc
+	url *url.URL
+	// Need to keep as pointer for Go nil is not nil problem.
+	license *license
+	// Need to keep as pointer for Go nil is not nil problem.
+	doc *doc
 }
 
 func newPluginInfo(
 	url *url.URL,
-	license License,
-	doc Doc,
+	license *license,
+	doc *doc,
 ) (*pluginInfo, error) {
 	if url != nil && url.Host == "" {
 		return nil, fmt.Errorf("url %v must be absolute", url)
@@ -117,10 +119,18 @@ func (p *pluginInfo) URL() *url.URL {
 }
 
 func (p *pluginInfo) License() License {
+	// Go nil is not nil problem.
+	if p.license == nil {
+		return nil
+	}
 	return p.license
 }
 
 func (p *pluginInfo) Doc() Doc {
+	// Go nil is not nil problem.
+	if p.doc == nil {
+		return nil
+	}
 	return p.doc
 }
 

@@ -77,7 +77,21 @@ func NewServer(spec *Spec, options ...ServerOption) (pluginrpc.Server, error) {
 		infov1pluginrpc.RegisterPluginInfoServiceServer(serverRegistrar, pluginInfoServiceServer)
 	}
 
-	return pluginrpc.NewServer(pluginrpcSpec, serverRegistrar)
+	// Add documentation to -h/--help.
+	var pluginrpcServerOptions []pluginrpc.ServerOption
+	if spec.Info != nil {
+		pluginInfo, err := info.NewPluginInfoForSpec(spec.Info)
+		if err != nil {
+			return nil, err
+		}
+		if doc := pluginInfo.Doc(); doc != nil {
+			pluginrpcServerOptions = append(
+				pluginrpcServerOptions,
+				pluginrpc.ServerWithDoc(doc.String()),
+			)
+		}
+	}
+	return pluginrpc.NewServer(pluginrpcSpec, serverRegistrar, pluginrpcServerOptions...)
 }
 
 // ServerOption is an option for Server.

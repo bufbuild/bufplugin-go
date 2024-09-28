@@ -118,7 +118,8 @@ func (l *license) toProto() *infov1.License {
 
 func (*license) isLicense() {}
 
-func licenseForProtoLicense(protoLicense *infov1.License) (License, error) {
+// Need to keep as pointer for Go nil is not nil problem.
+func licenseForProtoLicense(protoLicense *infov1.License) (*license, error) {
 	if protoLicense == nil {
 		return nil, nil
 	}
