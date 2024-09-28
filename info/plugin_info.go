@@ -20,8 +20,8 @@ import (
 	"net/url"
 )
 
-// Info is information about a plugin.
-type Info interface {
+// PluginInfo is information about a plugin.
+type PluginInfo interface {
 	// URL returns the URL for a plugin.
 	//
 	// Optional.
@@ -40,8 +40,8 @@ type Info interface {
 	isInfo()
 }
 
-// InfoForSpec returns a new Info for the given Spec.
-func InfoForSpec(spec *Spec) (Info, error) {
+// NewPluginInfoForSpec returns a new PluginInfo for the given Spec.
+func NewPluginInfoForSpec(spec *Spec) (PluginInfo, error) {
 	if err := ValidateSpec(spec); err != nil {
 		return nil, err
 	}
@@ -50,34 +50,34 @@ func InfoForSpec(spec *Spec) (Info, error) {
 
 // *** PRIVATE ***
 
-type info struct {
+type pluginInfo struct {
 	url     *url.URL
 	license License
 	doc     Doc
 }
 
-func newInfo(
+func newPluginInfo(
 	url *url.URL,
 	license License,
 	doc Doc,
-) *info {
-	return &info{
+) *pluginInfo {
+	return &pluginInfo{
 		url:     url,
 		license: license,
 		doc:     doc,
 	}
 }
 
-func (i *info) URL() *url.URL {
-	return i.url
+func (p *pluginInfo) URL() *url.URL {
+	return p.url
 }
 
-func (i *info) License() License {
-	return i.license
+func (p *pluginInfo) License() License {
+	return p.license
 }
 
-func (i *info) Doc() Doc {
-	return i.doc
+func (p *pluginInfo) Doc() Doc {
+	return p.doc
 }
 
-func (*info) isInfo() {}
+func (*pluginInfo) isPluginInfo() {}
