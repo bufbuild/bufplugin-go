@@ -131,26 +131,6 @@ func (c *client) Generate(ctx context.Context, request Request, _ ...GenerateCal
 	if err != nil {
 		return nil, err
 	}
-	for _, protoRequest := range protoRequests {
-		protoResponse, err := generateServiceClient.Generate(ctx, protoRequest)
-		if err != nil {
-			return nil, err
-		}
-		for _, protoAnnotation := range protoResponse.GetAnnotations() {
-			multiResponseWriter.addAnnotation(
-				protoAnnotation.GetRuleId(),
-				WithMessage(protoAnnotation.GetMessage()),
-				WithFileNameAndSourcePath(
-					protoAnnotation.GetFileLocation().GetFileName(),
-					protoAnnotation.GetFileLocation().GetSourcePath(),
-				),
-				WithAgainstFileNameAndSourcePath(
-					protoAnnotation.GetAgainstFileLocation().GetFileName(),
-					protoAnnotation.GetAgainstFileLocation().GetSourcePath(),
-				),
-			)
-		}
-	}
 	return multiResponseWriter.toResponse()
 }
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package generatetest provides testing helpers when writing lint and breaking change plugins.
+// Package generatetest provides testing helpers when writing generate plugins.
 //
 // The easiest entry point is TestCase. This allows you to set up a test and run it extremely
 // easily. Other functions provide lower-level primitives if TestCase doesn't meet your needs.
@@ -22,13 +22,11 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
-	"strconv"
 	"testing"
 
 	descriptorv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/descriptor/v1"
 	"buf.build/go/bufplugin/descriptor"
 	"buf.build/go/bufplugin/generate"
-	"buf.build/go/bufplugin/internal/pkg/xslices"
 	"buf.build/go/bufplugin/option"
 	"github.com/bufbuild/protocompile"
 	"github.com/bufbuild/protocompile/linker"
@@ -36,7 +34,6 @@ import (
 	"github.com/bufbuild/protocompile/protoutil"
 	"github.com/bufbuild/protocompile/reporter"
 	"github.com/bufbuild/protocompile/wellknownimports"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -62,8 +59,6 @@ type GenerateTest struct {
 	//
 	// Required.
 	Spec *generate.Spec
-	// ExpectedAnnotations are the expected Annotations that should be returned.
-	ExpectedAnnotations []ExpectedAnnotation
 }
 
 // Run runs the test.
@@ -87,21 +82,17 @@ func (c GenerateTest) Run(t *testing.T) {
 	require.NoError(t, err)
 	response, err := client.Generate(ctx, request)
 	require.NoError(t, err)
-	AssertAnnotationsEqual(t, c.ExpectedAnnotations, response.Annotations())
+	require.NoError(t, "TODO")
 }
 
 // RequestSpec specifies request parameters to be compiled for testing.
 //
 // This allows a Request to be built from a directory of .proto files.
 type RequestSpec struct {
-	// Files specifies the input files to test against.
+	// Files specifies the input files.
 	//
 	// Required.
 	Files *ProtoFileSpec
-	// AgainstFiles specifies the input against files to test against, if anoy.
-	AgainstFiles *ProtoFileSpec
-	// RuleIDs are the specific RuleIDs to run.
-	RuleIDs []string
 	// Options are any options to pass to the plugin.
 	Options map[string]any
 }
@@ -118,18 +109,12 @@ func (r *RequestSpec) ToRequest(ctx context.Context) (generate.Request, error) {
 		return nil, errors.New("RequestSpec.Files not set")
 	}
 
-	againstFileDescriptors, err := r.AgainstFiles.ToFileDescriptors(ctx)
-	if err != nil {
-		return nil, err
-	}
 	options, err := option.NewOptions(r.Options)
 	if err != nil {
 		return nil, err
 	}
 	requestOptions := []generate.RequestOption{
-		generate.WithAgainstFileDescriptors(againstFileDescriptors),
 		generate.WithOptions(options),
-		generate.WithRuleIDs(r.RuleIDs...),
 	}
 
 	fileDescriptors, err := r.Files.ToFileDescriptors(ctx)
@@ -175,96 +160,6 @@ func (p *ProtoFileSpec) ToFileDescriptors(ctx context.Context) ([]descriptor.Fil
 	return compile(ctx, p.DirPaths, p.FilePaths)
 }
 
-// ExpectedAnnotation contains the values expected from an Annotation.
-type ExpectedAnnotation struct {
-	// RuleID is the ID of the Rule.
-	//
-	// Required.
-	RuleID string
-	// Message is the message returned from the annoation.
-	//
-	// If Message is not set on ExpectedAnnotation, this field will *not* be compared
-	// against the value in Annotation. That is, it is valid to have an Annotation return
-	// a message but to not set it on ExpectedAnnotation.
-	Message string
-	// FileLocation is the location of the failure.
-	FileLocation *ExpectedFileLocation
-	// AgainstFileLocation is the against location of the failure.
-	AgainstFileLocation *ExpectedFileLocation
-}
-
-// String implements fmt.Stringer.
-func (ea ExpectedAnnotation) String() string {
-	return "ruleID=\"" + ea.RuleID + "\"" +
-		" message=\"" + ea.Message + "\"" +
-		" location=\"" + ea.FileLocation.String() + "\"" +
-		" againstLocation=\"" + ea.AgainstFileLocation.String() + "\""
-}
-
-// ExpectedFileLocation contains the values expected from a Location.
-type ExpectedFileLocation struct {
-	// FileName is the name of the file.
-	FileName string
-	// StartLine is the zero-indexed start line.
-	StartLine int
-	// StartColumn is the zero-indexed start column.
-	StartColumn int
-	// EndLine is the zero-indexed end line.
-	EndLine int
-	// EndColumn is the zero-indexed end column.
-	EndColumn int
-}
-
-// String implements fmt.Stringer.
-func (el *ExpectedFileLocation) String() string {
-	if el == nil {
-		return "nil"
-	}
-	return el.FileName +
-		" startLine=" + strconv.Itoa(el.StartLine) +
-		" startColumn=" + strconv.Itoa(el.StartColumn) +
-		" endLine=" + strconv.Itoa(el.EndLine) +
-		" endColumn=" + strconv.Itoa(el.EndColumn)
-}
-
-// AssertAnnotationsEqual asserts that the Annotations equal the expected Annotations.
-func AssertAnnotationsEqual(t *testing.T, expectedAnnotations []ExpectedAnnotation, actualAnnotations []generate.Annotation) {
-	if len(expectedAnnotations) == 0 {
-		expectedAnnotations = nil
-	}
-	if len(actualAnnotations) == 0 {
-		actualAnnotations = nil
-	}
-	actualExpectedAnnotations := expectedAnnotationsForAnnotations(actualAnnotations)
-	msgAndArgs := []any{"expected:\n%v\nactual:\n%v", expectedAnnotations, actualExpectedAnnotations}
-	require.Equal(t, len(expectedAnnotations), len(actualExpectedAnnotations), msgAndArgs...)
-	for i, expectedAnnotation := range expectedAnnotations {
-		if expectedAnnotation.Message == "" {
-			actualExpectedAnnotations[i].Message = ""
-		}
-	}
-	assert.Equal(t, expectedAnnotations, actualExpectedAnnotations, msgAndArgs...)
-}
-
-// RequireAnnotationsEqual requires that the Annotations equal the expected Annotations.
-func RequireAnnotationsEqual(t *testing.T, expectedAnnotations []ExpectedAnnotation, actualAnnotations []generate.Annotation) {
-	if len(expectedAnnotations) == 0 {
-		expectedAnnotations = nil
-	}
-	if len(actualAnnotations) == 0 {
-		actualAnnotations = nil
-	}
-	actualExpectedAnnotations := expectedAnnotationsForAnnotations(actualAnnotations)
-	msgAndArgs := []any{"expected:\n%v\nactual:\n%v", expectedAnnotations, actualExpectedAnnotations}
-	require.Equal(t, len(expectedAnnotations), len(actualExpectedAnnotations), msgAndArgs...)
-	for i, expectedAnnotation := range expectedAnnotations {
-		if expectedAnnotation.Message == "" {
-			actualExpectedAnnotations[i].Message = ""
-		}
-	}
-	require.Equal(t, expectedAnnotations, actualExpectedAnnotations, msgAndArgs...)
-}
-
 // *** PRIVATE ***
 
 func validateProtoFileSpec(protoFileSpec *ProtoFileSpec) error {
@@ -275,44 +170,6 @@ func validateProtoFileSpec(protoFileSpec *ProtoFileSpec) error {
 		return errors.New("no FilePaths specified on ProtoFileSpec")
 	}
 	return nil
-}
-
-// expectedAnnotationsForAnnotations returns ExpectedAnnotations for the given Annotations.
-//
-// Callers will need to filter out the Messages from the returned ExpectedAnnotations to conform
-// to the ExpectedAnnotations that are being compared against. See the note on ExpectedAnnotation.Message.
-func expectedAnnotationsForAnnotations(annotations []generate.Annotation) []ExpectedAnnotation {
-	return xslices.Map(annotations, expectedAnnotationForAnnotation)
-}
-
-// expectedAnnotationForAnnotation returns an ExpectedAnnotation for the given Annotation.
-//
-// Callers will need to filter out the Messages from the returned ExpectedAnnotations to conform
-// to the ExpectedAnnotations that are being compared against. See the note on ExpectedAnnotation.Message.
-func expectedAnnotationForAnnotation(annotation generate.Annotation) ExpectedAnnotation {
-	expectedAnnotation := ExpectedAnnotation{
-		RuleID:  annotation.RuleID(),
-		Message: annotation.Message(),
-	}
-	if fileLocation := annotation.FileLocation(); fileLocation != nil {
-		expectedAnnotation.FileLocation = &ExpectedFileLocation{
-			FileName:    fileLocation.FileDescriptor().ProtoreflectFileDescriptor().Path(),
-			StartLine:   fileLocation.StartLine(),
-			StartColumn: fileLocation.StartColumn(),
-			EndLine:     fileLocation.EndLine(),
-			EndColumn:   fileLocation.EndColumn(),
-		}
-	}
-	if againstFileLocation := annotation.AgainstFileLocation(); againstFileLocation != nil {
-		expectedAnnotation.AgainstFileLocation = &ExpectedFileLocation{
-			FileName:    againstFileLocation.FileDescriptor().ProtoreflectFileDescriptor().Path(),
-			StartLine:   againstFileLocation.StartLine(),
-			StartColumn: againstFileLocation.StartColumn(),
-			EndLine:     againstFileLocation.EndLine(),
-			EndColumn:   againstFileLocation.EndColumn(),
-		}
-	}
-	return expectedAnnotation
 }
 
 func compile(ctx context.Context, dirPaths []string, filePaths []string) ([]descriptor.FileDescriptor, error) {
