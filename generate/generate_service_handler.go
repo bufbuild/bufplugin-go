@@ -71,6 +71,10 @@ func (c *generateServiceHandler) Generate(
 			return nil, err
 		}
 	}
+	responseWriter := newResponseWriter()
+	if err := c.spec.Handler.Handle(ctx, responseWriter, request); err != nil {
+		return nil, err
+	}
 	response, err := responseWriter.toResponse()
 	if err != nil {
 		return nil, err

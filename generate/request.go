@@ -15,12 +15,12 @@
 package generate
 
 import (
-	"fmt"
 	"slices"
 
 	generatev1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/generate/v1"
 	"buf.build/go/bufplugin/descriptor"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
+	"buf.build/go/bufplugin/internal/util/descriptorutil"
 	"buf.build/go/bufplugin/option"
 )
 
@@ -94,7 +94,7 @@ func newRequest(
 	if requestOptions.options == nil {
 		requestOptions.options = option.EmptyOptions
 	}
-	if err := validateFileDescriptors(fileDescriptors); err != nil {
+	if err := descriptorutil.ValidateFileDescriptors(fileDescriptors); err != nil {
 		return nil, err
 	}
 	return &request{
@@ -116,7 +116,6 @@ func (r *request) toProto() (*generatev1.GenerateRequest, error) {
 		return nil, nil
 	}
 	protoFileDescriptors := xslices.Map(r.fileDescriptors, descriptor.FileDescriptor.ToProto)
-	protoAgainstFileDescriptors := xslices.Map(r.againstFileDescriptors, descriptor.FileDescriptor.ToProto)
 	protoOptions, err := r.options.ToProto()
 	if err != nil {
 		return nil, err
@@ -128,24 +127,6 @@ func (r *request) toProto() (*generatev1.GenerateRequest, error) {
 }
 
 func (*request) isRequest() {}
-
-// TODO: put in descriptor so both check and generate can use
-func validateFileDescriptors(fileDescriptors []descriptor.FileDescriptor) error {
-	_, err := fileNameToFileDescriptorForFileDescriptors(fileDescriptors)
-	return err
-}
-
-func fileNameToFileDescriptorForFileDescriptors(fileDescriptors []descriptor.FileDescriptor) (map[string]descriptor.FileDescriptor, error) {
-	fileNameToFileDescriptor := make(map[string]descriptor.FileDescriptor, len(fileDescriptors))
-	for _, fileDescriptor := range fileDescriptors {
-		fileName := fileDescriptor.ProtoreflectFileDescriptor().Path()
-		if _, ok := fileNameToFileDescriptor[fileName]; ok {
-			return nil, fmt.Errorf("duplicate file name: %q", fileName)
-		}
-		fileNameToFileDescriptor[fileName] = fileDescriptor
-	}
-	return fileNameToFileDescriptor, nil
-}
 
 type requestOptions struct {
 	options option.Options

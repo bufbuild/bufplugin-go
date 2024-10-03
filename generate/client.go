@@ -96,8 +96,6 @@ type client struct {
 
 	pluginrpcClient pluginrpc.Client
 
-	caching bool
-
 	generateServiceClient *cache.Singleton[v1pluginrpc.GenerateServiceClient]
 }
 
@@ -112,7 +110,6 @@ func newClient(
 	client := &client{
 		Client:          info.NewClient(pluginrpcClient, infoClientOptions...),
 		pluginrpcClient: pluginrpcClient,
-		caching:         caching,
 	}
 	client.generateServiceClient = cache.NewSingleton(client.getGenerateServiceClientUncached)
 	return client
@@ -123,15 +120,25 @@ func (c *client) Generate(ctx context.Context, request Request, _ ...GenerateCal
 	if err != nil {
 		return nil, err
 	}
-	multiResponseWriter, err := newMultiResponseWriter(request)
+	protoRequest, err := request.toProto()
 	if err != nil {
 		return nil, err
 	}
-	protoRequests, err := request.toProtos()
+	protoResponse, err := generateServiceClient.Generate(ctx, protoRequest)
 	if err != nil {
 		return nil, err
 	}
-	return multiResponseWriter.toResponse()
+	responseWriter := newResponseWriter()
+	for _, protoFile := range protoResponse.GetFiles() {
+		writer, err := responseWriter.Put(protoFile.GetPath())
+		if err != nil {
+			return nil, err
+		}
+		if _, err := writer.Write(protoFile.GetContent()); err != nil {
+			return nil, err
+		}
+	}
+	return responseWriter.toResponse()
 }
 
 func (c *client) getGenerateServiceClientUncached(ctx context.Context) (v1pluginrpc.GenerateServiceClient, error) {

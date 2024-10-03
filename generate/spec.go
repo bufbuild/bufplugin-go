@@ -49,6 +49,9 @@ type Spec struct {
 // This is exposed publicly so it can be run as part of plugin tests. This will verify
 // that your Spec will result in a valid plugin.
 func ValidateSpec(spec *Spec) error {
+	if spec.Handler == nil {
+		return newValidateSpecError("Handler is nil")
+	}
 	if spec.Info != nil {
 		if err := info.ValidateSpec(spec.Info); err != nil {
 			return err

@@ -20,6 +20,7 @@ import (
 	"sync"
 
 	"buf.build/go/bufplugin/descriptor"
+	"buf.build/go/bufplugin/internal/util/descriptorutil"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -169,11 +170,11 @@ type multiResponseWriter struct {
 }
 
 func newMultiResponseWriter(request Request) (*multiResponseWriter, error) {
-	fileNameToFileDescriptor, err := fileNameToFileDescriptorForFileDescriptors(request.FileDescriptors())
+	fileNameToFileDescriptor, err := descriptorutil.FileNameToFileDescriptorForFileDescriptors(request.FileDescriptors())
 	if err != nil {
 		return nil, err
 	}
-	againstFileNameToFileDescriptor, err := fileNameToFileDescriptorForFileDescriptors(request.AgainstFileDescriptors())
+	againstFileNameToFileDescriptor, err := descriptorutil.FileNameToFileDescriptorForFileDescriptors(request.AgainstFileDescriptors())
 	if err != nil {
 		return nil, err
 	}

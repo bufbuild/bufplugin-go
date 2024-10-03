@@ -22,17 +22,17 @@ import (
 //
 // A plugin just needs to provide a Spec, and then call this function within main.
 //
-//		func main() {
-//			generate.Main(
-//				&generate.Spec {
-//					Handler: generate.HandlerFunc(
-//	               func(ctx context.Context, responseWriter generate.ResponseWriter, request generate.Request) error {
-//	                 return errors.New("implement your generator here")
-//	               },
-//	             ),
-//				},
-//			)
-//		}
+//	func main() {
+//		generate.Main(
+//			&generate.Spec {
+//				Handler: generate.HandlerFunc(
+//					func(ctx context.Context, responseWriter generate.ResponseWriter, request generate.Request) error {
+//						return errors.New("implement your generator here")
+//					},
+//				),
+//			},
+//		)
+//	}
 func Main(spec *Spec, _ ...MainOption) {
 	pluginrpc.Main(
 		func() (pluginrpc.Server, error) {

@@ -15,13 +15,13 @@
 package check
 
 import (
-	"fmt"
 	"slices"
 	"sort"
 
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
 	"buf.build/go/bufplugin/descriptor"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
+	"buf.build/go/bufplugin/internal/util/descriptorutil"
 	"buf.build/go/bufplugin/option"
 )
 
@@ -152,10 +152,10 @@ func newRequest(
 		return nil, err
 	}
 	sort.Strings(requestOptions.ruleIDs)
-	if err := validateFileDescriptors(fileDescriptors); err != nil {
+	if err := descriptorutil.ValidateFileDescriptors(fileDescriptors); err != nil {
 		return nil, err
 	}
-	if err := validateFileDescriptors(requestOptions.againstFileDescriptors); err != nil {
+	if err := descriptorutil.ValidateFileDescriptors(requestOptions.againstFileDescriptors); err != nil {
 		return nil, err
 	}
 	return &request{
@@ -222,23 +222,6 @@ func (r *request) toProtos() ([]*checkv1.CheckRequest, error) {
 }
 
 func (*request) isRequest() {}
-
-func validateFileDescriptors(fileDescriptors []descriptor.FileDescriptor) error {
-	_, err := fileNameToFileDescriptorForFileDescriptors(fileDescriptors)
-	return err
-}
-
-func fileNameToFileDescriptorForFileDescriptors(fileDescriptors []descriptor.FileDescriptor) (map[string]descriptor.FileDescriptor, error) {
-	fileNameToFileDescriptor := make(map[string]descriptor.FileDescriptor, len(fileDescriptors))
-	for _, fileDescriptor := range fileDescriptors {
-		fileName := fileDescriptor.ProtoreflectFileDescriptor().Path()
-		if _, ok := fileNameToFileDescriptor[fileName]; ok {
-			return nil, fmt.Errorf("duplicate file name: %q", fileName)
-		}
-		fileNameToFileDescriptor[fileName] = fileDescriptor
-	}
-	return fileNameToFileDescriptor, nil
-}
 
 type requestOptions struct {
 	againstFileDescriptors []descriptor.FileDescriptor

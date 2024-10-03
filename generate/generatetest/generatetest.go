@@ -49,6 +49,14 @@ type GenerateTest struct {
 	//
 	// Required.
 	Spec *generate.Spec
+	// ExpectedFiles are the expected files that should be returned.
+	//
+	// Only one of ExpectedFiles and ExpectedDirPath can be set.
+	ExpectedFiles []ExpectedFile
+	// ExpectedDirPath is the directory path containing the expected output files.
+	//
+	// Only one of ExpectedFiles and ExpectedDirPath can be set.
+	ExpectedDirPath string
 }
 
 // Run runs the test.
@@ -59,12 +67,14 @@ type GenerateTest struct {
 //   - Create a new Request.
 //   - Create a new Client based on the Spec.
 //   - Call Generate on the Client.
-//   - Compare the resulting Annotations with the ExpectedAnnotations, failing if there is a mismatch.
+//   - Compare the resulting files with the ExpectedFiles or ExpectedDirPath, failing
+//     if there is a mismatch.
 func (c GenerateTest) Run(t *testing.T) {
 	ctx := context.Background()
 
 	require.NotNil(t, c.Request)
 	require.NotNil(t, c.Spec)
+	require.False(t, len(c.ExpectedFiles) > 0 && len(c.ExpectedDirPath) > 0)
 
 	request, err := c.Request.ToRequest(ctx)
 	require.NoError(t, err)
@@ -72,7 +82,11 @@ func (c GenerateTest) Run(t *testing.T) {
 	require.NoError(t, err)
 	response, err := client.Generate(ctx, request)
 	require.NoError(t, err)
-	require.NoError(t, "TODO")
+	expectedFiles := c.ExpectedFiles
+	if len(c.ExpectedDirPath) > 0 {
+		expectedFiles = getExpectedFilesForDirPath(t, c.ExpectedDirPath)
+	}
+	requireResponseFilesEqual(t, response, expectedFiles)
 }
 
 // RequestSpec specifies request parameters to be compiled for testing.
@@ -112,4 +126,21 @@ func (r *RequestSpec) ToRequest(ctx context.Context) (generate.Request, error) {
 		return nil, err
 	}
 	return generate.NewRequest(fileDescriptors, requestOptions...)
+}
+
+// ExpectedFile is an expected file and its content.
+type ExpectedFile struct {
+	Path    string
+	Content []byte
+}
+
+// *** PRIVATE ***
+
+func requireResponseFilesEqual(t *testing.T, response generate.Response, expectedFiles []ExpectedFile) {
+	require.NoError(t, errors.New("TODO"))
+}
+
+func getExpectedFilesForDirPath(t *testing.T, dirPath string) []ExpectedFile {
+	require.NoError(t, errors.New("TODO"))
+	return nil
 }

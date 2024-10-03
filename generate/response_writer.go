@@ -15,14 +15,24 @@
 package generate
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
+	"io"
+	"sync"
 )
 
 var errCannotReuseResponseWriter = errors.New("cannot reuse ResponseWriter")
 
 // ResponseWriter is used by plugin implmentations to add Files to responses.
 type ResponseWriter interface {
-	//NewFileWriter(name string) (FileWriter, error)
+	// Put opens a new file for Writing.
+	//
+	// The path must be relative, use "/" as the path separator, and not contain
+	// any "." or ".." components.
+	//
+	// Returns error if the path is not valid or has already been written.
+	Put(path string) (io.Writer, error)
 
 	isResponseWriter()
 }
@@ -30,10 +40,43 @@ type ResponseWriter interface {
 // *** PRIVATE ***
 
 type responseWriter struct {
+	pathToBuffer map[string]*bytes.Buffer
+
+	written bool
+	lock    sync.RWMutex
 }
 
 func newResponseWriter() *responseWriter {
 	return &responseWriter{}
+}
+
+func (r *responseWriter) Put(path string) (io.Writer, error) {
+	path, err := validateAndNormalizePath(path)
+	if err != nil {
+		return nil, err
+	}
+
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	if r.written {
+		return nil, errCannotReuseResponseWriter
+	}
+	if _, ok := r.pathToBuffer[path]; ok {
+		return nil, fmt.Errorf("duplicate path: %q", path)
+	}
+	buffer := bytes.NewBuffer(nil)
+	r.pathToBuffer[path] = buffer
+	return buffer, nil
+}
+
+func (r *responseWriter) toResponse() (Response, error) {
+	if r.written {
+		return nil, errCannotReuseResponseWriter
+	}
+	r.written = true
+
+	return newResponse(r.pathToBuffer)
 }
 
 func (*responseWriter) isResponseWriter() {}

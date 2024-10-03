@@ -28,13 +28,8 @@ import (
 //
 // - The Generate RPC on the command "generate".
 // - The GetPluginInfo RPC on the command "info" (if spec.Info is present).
-func NewServer(spec *Spec, options ...ServerOption) (pluginrpc.Server, error) {
-	serverOptions := newServerOptions()
-	for _, option := range options {
-		option(serverOptions)
-	}
-
-	generateServiceHandler, err := NewGenerateServiceHandler(spec, GenerateServiceHandlerWithParallelism(serverOptions.parallelism))
+func NewServer(spec *Spec, _ ...ServerOption) (pluginrpc.Server, error) {
+	generateServiceHandler, err := NewGenerateServiceHandler(spec)
 	if err != nil {
 		return nil, err
 	}
