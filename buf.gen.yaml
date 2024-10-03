@@ -1,6 +1,6 @@
 version: v2
 inputs:
-  - module: buf.build/bufbuild/bufplugin
+  - module: buf.build/bufbuild/bufplugin:generate
 managed:
   enabled: true
   disable:
