@@ -18,7 +18,6 @@ import (
 	"context"
 
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
-	"buf.build/go/bufplugin/info"
 	"buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
 	"buf.build/go/bufplugin/internal/pkg/cache"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
@@ -34,8 +33,6 @@ const (
 //
 // All calls with pluginrpc.Error with CodeUnimplemented if any procedure is not implemented.
 type Client interface {
-	info.Client
-
 	// Check invokes a check using the plugin..
 	Check(ctx context.Context, request Request, options ...CheckCallOption) (Response, error)
 	// ListRules lists all available Rules from the plugin.
@@ -117,8 +114,6 @@ type ListCategoriesCallOption func(*listCategoriesCallOptions)
 // *** PRIVATE ***
 
 type client struct {
-	info.Client
-
 	pluginrpcClient pluginrpc.Client
 
 	caching bool
@@ -133,12 +128,7 @@ func newClient(
 	pluginrpcClient pluginrpc.Client,
 	caching bool,
 ) *client {
-	var infoClientOptions []info.ClientOption
-	if caching {
-		infoClientOptions = append(infoClientOptions, info.ClientWithCaching())
-	}
 	client := &client{
-		Client:          info.NewClient(pluginrpcClient, infoClientOptions...),
 		pluginrpcClient: pluginrpcClient,
 		caching:         caching,
 	}

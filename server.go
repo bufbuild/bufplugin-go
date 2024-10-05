@@ -15,6 +15,7 @@
 package check
 
 import (
+	"buf.build/go/bufplugin/check"
 	"buf.build/go/bufplugin/info"
 	checkv1pluginrpc "buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
 	infov1pluginrpc "buf.build/go/bufplugin/internal/gen/buf/plugin/info/v1/v1pluginrpc"
@@ -26,9 +27,10 @@ import (
 //
 // This registers:
 //
-// - The Check RPC on the command "check".
-// - The ListRules RPC on the command "list-rules".
-// - The ListCategories RPC on the command "list-categories".
+// - The Check RPC on the command "check" (if spec.Check is present).
+// - The ListRules RPC on the command "list-rules" (if spec.Check is present).
+// - The ListCategories RPC on the command "list-categories" (if spec.Check is present).
+// - The Generate RPC on the command "generate" (if spec.Generate is present).
 // - The GetPluginInfo RPC on the command "info" (if spec.Info is present).
 func NewServer(spec *Spec, options ...ServerOption) (pluginrpc.Server, error) {
 	serverOptions := newServerOptions()
@@ -36,45 +38,74 @@ func NewServer(spec *Spec, options ...ServerOption) (pluginrpc.Server, error) {
 		option(serverOptions)
 	}
 
-	checkServiceHandler, err := NewCheckServiceHandler(spec, CheckServiceHandlerWithParallelism(serverOptions.parallelism))
-	if err != nil {
+	if err := ValidateSpec(spec); err != nil {
 		return nil, err
 	}
-	var pluginInfoServiceHandler infov1pluginrpc.PluginInfoServiceHandler
-	if spec.Info != nil {
-		pluginInfoServiceHandler, err = info.NewPluginInfoServiceHandler(spec.Info)
+
+	var pluginrpcSpecs []pluginrpc.Spec
+
+	if spec.Check != nil {
+		pluginrpcSpec, err := checkv1pluginrpc.CheckServiceSpecBuilder{
+			Check:          []pluginrpc.ProcedureOption{pluginrpc.ProcedureWithArgs("check")},
+			ListRules:      []pluginrpc.ProcedureOption{pluginrpc.ProcedureWithArgs("list-rules")},
+			ListCategories: []pluginrpc.ProcedureOption{pluginrpc.ProcedureWithArgs("list-categories")},
+		}.Build()
+		pluginrpcSpecs = append(pluginrpcSpecs, pluginrpcSpec)
+
+		checkServiceHandler, err := check.NewCheckServiceHandler(
+			spec,
+			check.CheckServiceHandlerWithParallelism(serverOptions.parallelism),
+		)
 		if err != nil {
 			return nil, err
 		}
+		handler := pluginrpc.NewHandler(pluginrpcSpec)
+		checkServiceServer := checkv1pluginrpc.NewCheckServiceServer(handler, checkServiceHandler)
+		checkv1pluginrpc.RegisterCheckServiceServer(serverRegistrar, checkServiceServer)
 	}
-	pluginrpcSpec, err := checkv1pluginrpc.CheckServiceSpecBuilder{
-		Check:          []pluginrpc.ProcedureOption{pluginrpc.ProcedureWithArgs("check")},
-		ListRules:      []pluginrpc.ProcedureOption{pluginrpc.ProcedureWithArgs("list-rules")},
-		ListCategories: []pluginrpc.ProcedureOption{pluginrpc.ProcedureWithArgs("list-categories")},
-	}.Build()
-	if err != nil {
-		return nil, err
+
+	if spec.Generate != nil {
+		pluginrpcSpec, err := generatev1pluginrpc.GenerateServiceSpecBuilder{
+			Generate: []pluginrpc.ProcedureOption{pluginrpc.ProcedureWithArgs("generate")},
+		}.Build()
+		pluginrpcSpecs = append(pluginrpcSpecs, pluginrpcSpec)
+
+		generateServiceHandler, err := generate.NewGenerateServiceHandler(
+			spec,
+			generate.GenerateServiceHandlerWithParallelism(serverOptions.parallelism),
+		)
+		if err != nil {
+			return nil, err
+		}
+		handler := pluginrpc.NewHandler(pluginrpcSpec)
+		generateServiceServer := generatev1pluginrpc.NewGenerateServiceServer(handler, generateServiceHandler)
+		generatev1pluginrpc.RegisterGenerateServiceServer(serverRegistrar, generateServiceServer)
 	}
-	if pluginInfoServiceHandler != nil {
-		pluginrpcInfoSpec, err := infov1pluginrpc.PluginInfoServiceSpecBuilder{
+
+	if spec.Info != nil {
+		pluginrpcSpec, err := infov1pluginrpc.PluginInfoServiceSpecBuilder{
 			GetPluginInfo: []pluginrpc.ProcedureOption{pluginrpc.ProcedureWithArgs("info")},
 		}.Build()
 		if err != nil {
 			return nil, err
 		}
-		pluginrpcSpec, err = pluginrpc.MergeSpecs(pluginrpcSpec, pluginrpcInfoSpec)
+		pluginrpcSpecs = append(pluginrpcSpecs, pluginrpcSpec)
+
+		pluginInfoServiceHandler, err := info.NewPluginInfoServiceHandler(spec.Info)
 		if err != nil {
 			return nil, err
 		}
-	}
-
-	serverRegistrar := pluginrpc.NewServerRegistrar()
-	handler := pluginrpc.NewHandler(pluginrpcSpec)
-	checkServiceServer := checkv1pluginrpc.NewCheckServiceServer(handler, checkServiceHandler)
-	checkv1pluginrpc.RegisterCheckServiceServer(serverRegistrar, checkServiceServer)
-	if pluginInfoServiceHandler != nil {
+		handler := pluginrpc.NewHandler(pluginrpcSpec)
 		pluginInfoServiceServer := infov1pluginrpc.NewPluginInfoServiceServer(handler, pluginInfoServiceHandler)
 		infov1pluginrpc.RegisterPluginInfoServiceServer(serverRegistrar, pluginInfoServiceServer)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	pluginrpcSpec, err = pluginrpc.MergeSpecs(pluginrpcSpecs...)
+	if err != nil {
+		return nil, err
 	}
 
 	// Add documentation to -h/--help.
@@ -91,6 +122,7 @@ func NewServer(spec *Spec, options ...ServerOption) (pluginrpc.Server, error) {
 			)
 		}
 	}
+
 	return pluginrpc.NewServer(pluginrpcSpec, serverRegistrar, pluginrpcServerOptions...)
 }
 

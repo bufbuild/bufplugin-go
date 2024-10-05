@@ -12,22 +12,60 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package generate
+package info
 
 import (
 	"context"
 	"testing"
 
+	"buf.build/go/bufplugin/info"
 	"github.com/stretchr/testify/require"
 	"pluginrpc.com/pluginrpc"
 )
+
+func TestPluginInfo(t *testing.T) {
+	t.Parallel()
+
+	client, err := NewClientForSpec(
+		&Spec{
+			Rules: []*RuleSpec{
+				{
+					ID:      "RULE1",
+					Purpose: "Test RULE1.",
+					Type:    RuleTypeLint,
+					Handler: nopRuleHandler,
+				},
+			},
+			Info: &info.Spec{
+				SPDXLicenseID: "apache-2.0",
+				LicenseURL:    "https://foo.com/license",
+			},
+		},
+	)
+	require.NoError(t, err)
+	pluginInfo, err := client.GetPluginInfo(context.Background())
+	require.NoError(t, err)
+	license := pluginInfo.License()
+	require.NotNil(t, license)
+	require.NotNil(t, license.URL())
+	// Case-sensitive.
+	require.Equal(t, "Apache-2.0", license.SPDXLicenseID())
+	require.Equal(t, "https://foo.com/license", license.URL().String())
+}
 
 func TestPluginInfoUnimplemented(t *testing.T) {
 	t.Parallel()
 
 	client, err := NewClientForSpec(
 		&Spec{
-			Handler: nopHandler,
+			Rules: []*RuleSpec{
+				{
+					ID:      "RULE1",
+					Purpose: "Test RULE1.",
+					Type:    RuleTypeLint,
+					Handler: nopRuleHandler,
+				},
+			},
 		},
 	)
 	require.NoError(t, err)

@@ -20,8 +20,8 @@ import (
 
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
 	"buf.build/go/bufplugin/descriptor"
+	"buf.build/go/bufplugin/internal/bufpluginutil"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
-	"buf.build/go/bufplugin/internal/util/descriptorutil"
 	"buf.build/go/bufplugin/option"
 )
 
@@ -152,10 +152,10 @@ func newRequest(
 		return nil, err
 	}
 	sort.Strings(requestOptions.ruleIDs)
-	if err := descriptorutil.ValidateFileDescriptors(fileDescriptors); err != nil {
+	if err := bufpluginutil.ValidateFileDescriptors(fileDescriptors); err != nil {
 		return nil, err
 	}
-	if err := descriptorutil.ValidateFileDescriptors(requestOptions.againstFileDescriptors); err != nil {
+	if err := bufpluginutil.ValidateFileDescriptors(requestOptions.againstFileDescriptors); err != nil {
 		return nil, err
 	}
 	return &request{

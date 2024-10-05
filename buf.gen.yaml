@@ -8,8 +8,23 @@ managed:
       module: buf.build/bufbuild/bufplugin
     - file_option: go_package_prefix
       module: buf.build/bufbuild/protovalidate
+rules:
+  - rule: protovalidate-go
+    options:
+      - foo: bar
+  - rule: protovalidate-cpp
+    options:
+      - foo: bar
 plugins:
-  - local: protoc-gen-pluginrpc-go
-    out: internal/gen
-    opt: paths=source_relative
-clean: true
+  - plugin: buf-plugin-protovalidate
+
+
+
+
+#plugins:
+  #- local: protoc-gen-pluginrpc-go
+    #out: internal/gen
+    #opt: paths=source_relative
+
+
+#clean: true

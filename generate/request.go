@@ -19,8 +19,8 @@ import (
 
 	generatev1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/generate/v1"
 	"buf.build/go/bufplugin/descriptor"
+	"buf.build/go/bufplugin/internal/bufpluginutil"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
-	"buf.build/go/bufplugin/internal/util/descriptorutil"
 	"buf.build/go/bufplugin/option"
 )
 
@@ -94,7 +94,7 @@ func newRequest(
 	if requestOptions.options == nil {
 		requestOptions.options = option.EmptyOptions
 	}
-	if err := descriptorutil.ValidateFileDescriptors(fileDescriptors); err != nil {
+	if err := bufpluginutil.ValidateFileDescriptors(fileDescriptors); err != nil {
 		return nil, err
 	}
 	return &request{

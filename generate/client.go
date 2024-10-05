@@ -17,7 +17,6 @@ package generate
 import (
 	"context"
 
-	"buf.build/go/bufplugin/info"
 	"buf.build/go/bufplugin/internal/gen/buf/plugin/generate/v1/v1pluginrpc"
 	"buf.build/go/bufplugin/internal/pkg/cache"
 	"pluginrpc.com/pluginrpc"
@@ -27,8 +26,6 @@ import (
 //
 // All calls with pluginrpc.Error with CodeUnimplemented if any procedure is not implemented.
 type Client interface {
-	info.Client
-
 	// Generate invokes a generate using the plugin..
 	Generate(ctx context.Context, request Request, options ...GenerateCallOption) (Response, error)
 
@@ -36,11 +33,7 @@ type Client interface {
 }
 
 // NewClient returns a new Client for the given pluginrpc.Client.
-func NewClient(pluginrpcClient pluginrpc.Client, options ...ClientOption) Client {
-	clientOptions := newClientOptions()
-	for _, option := range options {
-		option.applyToClient(clientOptions)
-	}
+func NewClient(pluginrpcClient pluginrpc.Client, _ ...ClientOption) Client {
 	return newClient(pluginrpcClient, clientOptions.caching)
 }
 
@@ -51,24 +44,10 @@ type ClientOption interface {
 	applyToClient(opts *clientOptions)
 }
 
-// ClientWithCaching returns a new ClientOption that will result caching for items
-// expected to be static:
-//
-// - PluginInfo from GetPluginInfo.
-//
-// The default is to not cache.
-func ClientWithCaching() ClientOption {
-	return clientWithCachingOption{}
-}
-
 // NewClientForSpec return a new Client that directly uses the given Spec.
 //
 // This should primarily be used for testing.
-func NewClientForSpec(spec *Spec, options ...ClientForSpecOption) (Client, error) {
-	clientForSpecOptions := newClientForSpecOptions()
-	for _, option := range options {
-		option.applyToClientForSpec(clientForSpecOptions)
-	}
+func NewClientForSpec(spec *Spec, _ ...ClientForSpecOption) (Client, error) {
 	server, err := NewServer(spec)
 	if err != nil {
 		return nil, err
@@ -77,7 +56,6 @@ func NewClientForSpec(spec *Spec, options ...ClientForSpecOption) (Client, error
 		pluginrpc.NewClient(
 			pluginrpc.NewServerRunner(server),
 		),
-		clientForSpecOptions.caching,
 	), nil
 }
 
@@ -92,8 +70,6 @@ type GenerateCallOption func(*generateCallOptions)
 // *** PRIVATE ***
 
 type client struct {
-	info.Client
-
 	pluginrpcClient pluginrpc.Client
 
 	generateServiceClient *cache.Singleton[v1pluginrpc.GenerateServiceClient]
@@ -101,14 +77,8 @@ type client struct {
 
 func newClient(
 	pluginrpcClient pluginrpc.Client,
-	caching bool,
 ) *client {
-	var infoClientOptions []info.ClientOption
-	if caching {
-		infoClientOptions = append(infoClientOptions, info.ClientWithCaching())
-	}
 	client := &client{
-		Client:          info.NewClient(pluginrpcClient, infoClientOptions...),
 		pluginrpcClient: pluginrpcClient,
 	}
 	client.generateServiceClient = cache.NewSingleton(client.getGenerateServiceClientUncached)
@@ -159,30 +129,8 @@ func (c *client) getGenerateServiceClientUncached(ctx context.Context) (v1plugin
 
 func (*client) isClient() {}
 
-type clientOptions struct {
-	caching bool
-}
+type clientOptions struct{}
 
-func newClientOptions() *clientOptions {
-	return &clientOptions{}
-}
-
-type clientForSpecOptions struct {
-	caching bool
-}
-
-func newClientForSpecOptions() *clientForSpecOptions {
-	return &clientForSpecOptions{}
-}
-
-type clientWithCachingOption struct{}
-
-func (clientWithCachingOption) applyToClient(clientOptions *clientOptions) {
-	clientOptions.caching = true
-}
-
-func (clientWithCachingOption) applyToClientForSpec(clientForSpecOptions *clientForSpecOptions) {
-	clientForSpecOptions.caching = true
-}
+type clientForSpecOptions struct{}
 
 type generateCallOptions struct{}

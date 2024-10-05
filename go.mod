@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.23.1
 
 require (
-	buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.34.2-00000000000000-4f0e0fd3b9f5.2
+	buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.34.2-00000000000000-532cc2a2c864.2
 	buf.build/go/spdx v0.2.0
 	github.com/bufbuild/protocompile v0.14.1
 	github.com/bufbuild/protovalidate-go v0.7.0
