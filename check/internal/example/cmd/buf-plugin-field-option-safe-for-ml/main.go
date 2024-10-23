@@ -110,7 +110,6 @@ var (
 		},
 		// Optional.
 		Info: &info.Spec{
-			URL:           "https://github.com/bufbuild/bufplugin-go",
 			SPDXLicenseID: "apache-2.0",
 			LicenseURL:    "https://github.com/bufbuild/bufplugin-go/blob/main/LICENSE",
 		},
