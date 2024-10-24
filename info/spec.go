@@ -22,12 +22,10 @@ import (
 
 // Spec is the spec for the information about a plugin.
 type Spec struct {
-	// URL is the URL for a plugin.
+	// Documentation contains the documentation of the plugin.
 	//
 	// Optional.
-	//
-	// Must be absolute if set.
-	URL string
+	Documentation string
 	// SPDXLicenseID is the SDPX ID of the License.
 	//
 	// Optional.
@@ -51,27 +49,10 @@ type Spec struct {
 	// Zero or one of LicenseText and LicenseURL must be set.
 	// Must be absolute if set.
 	LicenseURL string
-	// DocShort contains a short description of the plugin's functionality.
-	//
-	// Optional.
-	//
-	// Required if DocLong is set.
-	DocShort string
-	// DocLong contains extra details of the plugin.
-	//
-	// Optional.
-	//
-	// May not be set if DocShort is not set.
-	DocLong string
 }
 
 // ValidateSpec validates all values on a Spec.
 func ValidateSpec(spec *Spec) error {
-	if spec.URL != "" {
-		if err := validateSpecAbsoluteURL(spec.URL); err != nil {
-			return err
-		}
-	}
 	if spec.SPDXLicenseID != "" {
 		if _, ok := spdx.LicenseForID(spec.SPDXLicenseID); !ok {
 			return newValidateSpecErrorf("invalid SPDXLicenseID: %q", spec.SPDXLicenseID)
@@ -84,9 +65,6 @@ func ValidateSpec(spec *Spec) error {
 		if err := validateSpecAbsoluteURL(spec.LicenseURL); err != nil {
 			return err
 		}
-	}
-	if spec.DocShort == "" && spec.DocLong != "" {
-		return newValidateSpecError("DocShort is empty while DocLong is not empty")
 	}
 	return nil
 }

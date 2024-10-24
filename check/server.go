@@ -84,10 +84,10 @@ func NewServer(spec *Spec, options ...ServerOption) (pluginrpc.Server, error) {
 		if err != nil {
 			return nil, err
 		}
-		if doc := pluginInfo.Doc(); doc != nil {
+		if documentation := pluginInfo.Documentation(); documentation != "" {
 			pluginrpcServerOptions = append(
 				pluginrpcServerOptions,
-				pluginrpc.ServerWithDoc(doc.String()),
+				pluginrpc.ServerWithDoc(documentation),
 			)
 		}
 	}

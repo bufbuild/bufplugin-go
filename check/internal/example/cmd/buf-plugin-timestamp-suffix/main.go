@@ -79,10 +79,9 @@ var (
 		},
 		// Optional.
 		Info: &info.Spec{
-			URL:           "https://github.com/bufbuild/bufplugin-go",
+			Documentation: `A simple plugin that checks that all google.protobuf.Timestamp fields end in a specific suffix (default is "_time").`,
 			SPDXLicenseID: "apache-2.0",
 			LicenseURL:    "https://github.com/bufbuild/bufplugin-go/blob/main/LICENSE",
-			DocShort:      `A simple plugin that checks that all google.protobuf.Timestamp fields end in a specific suffix (default is "_time").`,
 		},
 	}
 )
