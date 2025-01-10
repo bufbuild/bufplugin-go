@@ -301,7 +301,7 @@ func valueToProtoValue(value any) (*optionv1.Value, error) {
 			}, nil
 		}
 		values := make([]*optionv1.Value, reflectValue.Len())
-		for i := 0; i < reflectValue.Len(); i++ {
+		for i := range reflectValue.Len() {
 			subValue, err := valueToProtoValue(reflectValue.Index(i).Interface())
 			if err != nil {
 				return nil, err
