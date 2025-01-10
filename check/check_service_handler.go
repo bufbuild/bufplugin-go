@@ -257,7 +257,7 @@ func (c *checkServiceHandler) getRulesAndNextPageToken(pageSize int, pageToken s
 		pageSize = defaultPageSize
 	}
 	resultRules := make([]Rule, 0, len(c.rules)-index)
-	for i := 0; i < pageSize; i++ {
+	for range pageSize {
 		if index >= len(c.rules) {
 			break
 		}
@@ -284,7 +284,7 @@ func (c *checkServiceHandler) getCategoriesAndNextPageToken(pageSize int, pageTo
 		pageSize = defaultPageSize
 	}
 	resultCategories := make([]Category, 0, len(c.categories)-index)
-	for i := 0; i < pageSize; i++ {
+	for range pageSize {
 		if index >= len(c.categories) {
 			break
 		}

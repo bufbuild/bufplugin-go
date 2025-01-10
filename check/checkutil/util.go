@@ -186,7 +186,7 @@ func forEachFileImport(
 	f func(protoreflect.FileImport) error,
 ) error {
 	fileImports := fileDescriptor.Imports()
-	for i := 0; i < fileImports.Len(); i++ {
+	for i := range fileImports.Len() {
 		if err := f(fileImports.Get(i)); err != nil {
 			return err
 		}
@@ -199,13 +199,13 @@ func forEachEnum(
 	f func(protoreflect.EnumDescriptor) error,
 ) error {
 	enums := container.Enums()
-	for i := 0; i < enums.Len(); i++ {
+	for i := range enums.Len() {
 		if err := f(enums.Get(i)); err != nil {
 			return err
 		}
 	}
 	messages := container.Messages()
-	for i := 0; i < messages.Len(); i++ {
+	for i := range messages.Len() {
 		// Nested enums.
 		if err := forEachEnum(messages.Get(i), f); err != nil {
 			return err
@@ -219,7 +219,7 @@ func forEachEnumValue(
 	f func(protoreflect.EnumValueDescriptor) error,
 ) error {
 	enumValues := enumDescriptor.Values()
-	for i := 0; i < enumValues.Len(); i++ {
+	for i := range enumValues.Len() {
 		if err := f(enumValues.Get(i)); err != nil {
 			return err
 		}
@@ -232,7 +232,7 @@ func forEachMessage(
 	f func(protoreflect.MessageDescriptor) error,
 ) error {
 	messages := container.Messages()
-	for i := 0; i < messages.Len(); i++ {
+	for i := range messages.Len() {
 		messageDescriptor := messages.Get(i)
 		if err := f(messageDescriptor); err != nil {
 			return err
@@ -253,13 +253,13 @@ func forEachField(
 		container,
 		func(messageDescriptor protoreflect.MessageDescriptor) error {
 			fields := messageDescriptor.Fields()
-			for i := 0; i < fields.Len(); i++ {
+			for i := range fields.Len() {
 				if err := f(fields.Get(i)); err != nil {
 					return err
 				}
 			}
 			extensions := messageDescriptor.Extensions()
-			for i := 0; i < extensions.Len(); i++ {
+			for i := range extensions.Len() {
 				if err := f(extensions.Get(i)); err != nil {
 					return err
 				}
@@ -270,7 +270,7 @@ func forEachField(
 		return err
 	}
 	extensions := container.Extensions()
-	for i := 0; i < extensions.Len(); i++ {
+	for i := range extensions.Len() {
 		if err := f(extensions.Get(i)); err != nil {
 			return err
 		}
@@ -283,7 +283,7 @@ func forEachOneof(
 	f func(protoreflect.OneofDescriptor) error,
 ) error {
 	oneofs := messageDescriptor.Oneofs()
-	for i := 0; i < oneofs.Len(); i++ {
+	for i := range oneofs.Len() {
 		if err := f(oneofs.Get(i)); err != nil {
 			return err
 		}
@@ -296,7 +296,7 @@ func forEachService(
 	f func(protoreflect.ServiceDescriptor) error,
 ) error {
 	services := fileDescriptor.Services()
-	for i := 0; i < services.Len(); i++ {
+	for i := range services.Len() {
 		if err := f(services.Get(i)); err != nil {
 			return err
 		}
@@ -309,7 +309,7 @@ func forEachMethod(
 	f func(protoreflect.MethodDescriptor) error,
 ) error {
 	methods := serviceDescriptor.Methods()
-	for i := 0; i < methods.Len(); i++ {
+	for i := range methods.Len() {
 		if err := f(methods.Get(i)); err != nil {
 			return err
 		}
