@@ -30,8 +30,6 @@ import (
 // are provided.
 type FileDescriptor interface {
 	// ProtoreflectFileDescriptor returns the protoreflect.FileDescriptor representing this FileDescriptor.
-	//
-	// This will always contain SourceCodeInfo.
 	ProtoreflectFileDescriptor() protoreflect.FileDescriptor
 
 	// FileDescriptorProto returns the FileDescriptorProto representing this File.
