@@ -12,13 +12,12 @@ export GOBIN := $(abspath $(BIN))
 COPYRIGHT_YEARS := 2024-2025
 LICENSE_IGNORE := --ignore testdata/
 
-BUF_VERSION := v1.42.0
-GO_MOD_GOTOOLCHAIN := go1.23.1
-GOLANGCI_LINT_VERSION := v1.60.3
+BUF_VERSION := v1.50.0
+GO_MOD_GOTOOLCHAIN := go1.23.5
+GOLANGCI_LINT_VERSION := v1.63.4
 # https://github.com/golangci/golangci-lint/issues/4837
 GOLANGCI_LINT_GOTOOLCHAIN := $(GO_MOD_GOTOOLCHAIN)
-# Remove when we want to upgrade past Go 1.21
-GO_GET_PKGS := github.com/antlr4-go/antlr/v4@v4.13.0 golang.org/x/exp@v0.0.0-20240823005443-9b4947da3948
+#GO_GET_PKGS :=
 
 .PHONY: help
 help: ## Describe useful make targets

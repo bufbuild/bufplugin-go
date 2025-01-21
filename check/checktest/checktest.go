@@ -380,7 +380,7 @@ func unusedDependencyIndexesForFilePathToUnusedDependencyFilePaths(
 		return unusedDependencyIndexes
 	}
 	dependencyFilePaths := fileDescriptorProto.GetDependency()
-	for i := range len(dependencyFilePaths) {
+	for i := range dependencyFilePaths {
 		if _, ok := unusedDependencyFilePaths[dependencyFilePaths[i]]; ok {
 			unusedDependencyIndexes = append(unusedDependencyIndexes, int32(i))
 		}
