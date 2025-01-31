@@ -60,7 +60,7 @@ func CheckServiceHandlerWithParallelism(parallelism int) CheckServiceHandlerOpti
 type checkServiceHandler struct {
 	spec                 *Spec
 	parallelism          int
-	validator            *protovalidate.Validator
+	validator            protovalidate.Validator
 	rules                []Rule
 	ruleIDToRule         map[string]Rule
 	ruleIDToRuleHandler  map[string]RuleHandler
