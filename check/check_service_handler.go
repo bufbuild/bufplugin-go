@@ -23,7 +23,7 @@ import (
 	"buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
 	"buf.build/go/bufplugin/internal/pkg/thread"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
-	"github.com/bufbuild/protovalidate-go"
+	"buf.build/go/protovalidate"
 	"pluginrpc.com/pluginrpc"
 )
 
