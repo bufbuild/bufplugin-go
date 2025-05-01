@@ -19,7 +19,7 @@ import (
 
 	infov1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/info/v1"
 	"buf.build/go/bufplugin/internal/gen/buf/plugin/info/v1/v1pluginrpc"
-	"github.com/bufbuild/protovalidate-go"
+	"buf.build/go/protovalidate"
 )
 
 // NewPluginInfoServiceHandler returns a new v1pluginrpc.PluginInfoServiceHandler for the given Spec.
