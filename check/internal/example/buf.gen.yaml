@@ -7,7 +7,7 @@ managed:
     - file_option: go_package_prefix
       value: buf.build/go/bufplugin/check/internal/example/gen
 plugins:
-  - remote: buf.build/protocolbuffers/go
+  - remote: buf.build/protocolbuffers/go:v1.36.6
     out: gen
     opt: paths=source_relative
 clean: true
