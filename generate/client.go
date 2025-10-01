@@ -1,4 +1,4 @@
-// Copyright 2024 Buf Technologies, Inc.
+// Copyright 2024-2025 Buf Technologies, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import (
 	"pluginrpc.com/pluginrpc"
 )
 
-// Client is a client for a custom lint or breaking change plugin.
+// Client is a client for a custom generate plugin.
 //
 // All calls with pluginrpc.Error with CodeUnimplemented if any procedure is not implemented.
 type Client interface {

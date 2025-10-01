@@ -1,4 +1,4 @@
-// Copyright 2024 Buf Technologies, Inc.
+// Copyright 2024-2025 Buf Technologies, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import (
 
 	generatev1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/generate/v1"
 	"buf.build/go/bufplugin/internal/gen/buf/plugin/generate/v1/v1pluginrpc"
-	"github.com/bufbuild/protovalidate-go"
+	"buf.build/go/protovalidate"
 	"pluginrpc.com/pluginrpc"
 )
 
@@ -37,7 +37,7 @@ type GenerateServiceHandlerOption func(*generateServiceHandlerOptions)
 
 type generateServiceHandler struct {
 	spec      *Spec
-	validator *protovalidate.Validator
+	validator protovalidate.Validator
 }
 
 func newGenerateServiceHandler(spec *Spec, _ ...GenerateServiceHandlerOption) (*generateServiceHandler, error) {

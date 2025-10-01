@@ -21,15 +21,26 @@ package checktest
 import (
 	"context"
 	"errors"
+	"path/filepath"
 	"strconv"
 	"testing"
 
+	descriptorv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/descriptor/v1"
 	"buf.build/go/bufplugin/check"
+	"buf.build/go/bufplugin/descriptor"
 	"buf.build/go/bufplugin/descriptor/descriptortest"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
 	"buf.build/go/bufplugin/option"
+	"github.com/bufbuild/protocompile"
+	"github.com/bufbuild/protocompile/linker"
+	"github.com/bufbuild/protocompile/parser"
+	"github.com/bufbuild/protocompile/protoutil"
+	"github.com/bufbuild/protocompile/reporter"
+	"github.com/bufbuild/protocompile/wellknownimports"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 // SpecTest tests your spec with check.ValidateSpec.
