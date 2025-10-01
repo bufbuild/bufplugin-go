@@ -1,4 +1,4 @@
-// Copyright 2024 Buf Technologies, Inc.
+// Copyright 2024-2025 Buf Technologies, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -79,10 +79,9 @@ var (
 		},
 		// Optional.
 		Info: &info.Spec{
-			URL:           "https://github.com/bufbuild/bufplugin-go",
+			Documentation: `A simple plugin that checks that all google.protobuf.Timestamp fields end in a specific suffix (default is "_time").`,
 			SPDXLicenseID: "apache-2.0",
 			LicenseURL:    "https://github.com/bufbuild/bufplugin-go/blob/main/LICENSE",
-			DocShort:      `A simple plugin that checks that all google.protobuf.Timestamp fields end in a specific suffix (default is "_time").`,
 		},
 	}
 )

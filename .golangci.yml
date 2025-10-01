@@ -76,6 +76,9 @@ issues:
         - unparam
       path: check/response.go
     - linters:
+        - unparam
+      path: info/plugin_info.go
+    - linters:
         - varnamelen
       path: check/internal/example
     - linters:

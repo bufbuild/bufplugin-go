@@ -1,4 +1,4 @@
-// Copyright 2024 Buf Technologies, Inc.
+// Copyright 2024-2025 Buf Technologies, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ func TestParallelizeSimple(t *testing.T) {
 	numJobs := 10
 	var executed atomic.Int64
 	jobs := make([]func(context.Context) error, 0, numJobs)
-	for i := 0; i < numJobs; i++ {
+	for range numJobs {
 		jobs = append(
 			jobs,
 			func(context.Context) error {
@@ -51,7 +51,7 @@ func TestParallelizeImmediateCancellation(t *testing.T) {
 	numJobs := 10
 	var executed atomic.Int64
 	jobs := make([]func(context.Context) error, 0, numJobs)
-	for i := 0; i < numJobs; i++ {
+	for range numJobs {
 		jobs = append(
 			jobs,
 			func(context.Context) error {

@@ -1,4 +1,4 @@
-// Copyright 2024 Buf Technologies, Inc.
+// Copyright 2024-2025 Buf Technologies, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -134,7 +134,7 @@ func TestClientListRulesCount(t *testing.T) {
 func testClientListRulesCount(t *testing.T, count int) {
 	require.True(t, count < 10000, "count must be less than 10000 for sorting to work properly in this test")
 	ruleSpecs := make([]*RuleSpec, count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		ruleSpecs[i] = &RuleSpec{
 			ID:      fmt.Sprintf("RULE%05d", i),
 			Purpose: fmt.Sprintf("Test RULE%05d.", i),
@@ -150,7 +150,7 @@ func testClientListRulesCount(t *testing.T, count int) {
 	rules, err := client.ListRules(context.Background())
 	require.NoError(t, err)
 	require.Equal(t, count, len(rules))
-	for i := 0; i < count; i++ {
+	for i := range count {
 		require.Equal(t, ruleSpecs[i].ID, rules[i].ID())
 	}
 }

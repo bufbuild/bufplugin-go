@@ -1,4 +1,4 @@
-// Copyright 2024 Buf Technologies, Inc.
+// Copyright 2024-2025 Buf Technologies, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -301,7 +301,7 @@ func valueToProtoValue(value any) (*optionv1.Value, error) {
 			}, nil
 		}
 		values := make([]*optionv1.Value, reflectValue.Len())
-		for i := 0; i < reflectValue.Len(); i++ {
+		for i := range reflectValue.Len() {
 			subValue, err := valueToProtoValue(reflectValue.Index(i).Interface())
 			if err != nil {
 				return nil, err

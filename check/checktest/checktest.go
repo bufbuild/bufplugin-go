@@ -1,4 +1,4 @@
-// Copyright 2024 Buf Technologies, Inc.
+// Copyright 2024-2025 Buf Technologies, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -257,4 +257,134 @@ func expectedAnnotationForAnnotation(annotation check.Annotation) ExpectedAnnota
 		}
 	}
 	return expectedAnnotation
+}
+
+func compile(ctx context.Context, dirPaths []string, filePaths []string) ([]descriptor.FileDescriptor, error) {
+	dirPaths = fromSlashPaths(dirPaths)
+	filePaths = fromSlashPaths(filePaths)
+	toSlashFilePathMap := make(map[string]struct{}, len(filePaths))
+	for _, filePath := range filePaths {
+		toSlashFilePathMap[filepath.ToSlash(filePath)] = struct{}{}
+	}
+
+	var warningErrorsWithPos []reporter.ErrorWithPos
+	compiler := protocompile.Compiler{
+		Resolver: wellknownimports.WithStandardImports(
+			&protocompile.SourceResolver{
+				ImportPaths: dirPaths,
+			},
+		),
+		Reporter: reporter.NewReporter(
+			func(reporter.ErrorWithPos) error {
+				return nil
+			},
+			func(errorWithPos reporter.ErrorWithPos) {
+				warningErrorsWithPos = append(warningErrorsWithPos, errorWithPos)
+			},
+		),
+		// This is what buf uses.
+		SourceInfoMode: protocompile.SourceInfoExtraOptionLocations,
+	}
+	files, err := compiler.Compile(ctx, filePaths...)
+	if err != nil {
+		return nil, err
+	}
+	syntaxUnspecifiedFilePaths := make(map[string]struct{})
+	filePathToUnusedDependencyFilePaths := make(map[string]map[string]struct{})
+	for _, warningErrorWithPos := range warningErrorsWithPos {
+		maybeAddSyntaxUnspecified(syntaxUnspecifiedFilePaths, warningErrorWithPos)
+		maybeAddUnusedDependency(filePathToUnusedDependencyFilePaths, warningErrorWithPos)
+	}
+	fileDescriptorSet := fileDescriptorSetForFileDescriptors(files)
+
+	protoFileDescriptors := make([]*descriptorv1.FileDescriptor, len(fileDescriptorSet.GetFile()))
+	for i, fileDescriptorProto := range fileDescriptorSet.GetFile() {
+		_, isNotImport := toSlashFilePathMap[fileDescriptorProto.GetName()]
+		_, isSyntaxUnspecified := syntaxUnspecifiedFilePaths[fileDescriptorProto.GetName()]
+		unusedDependencyIndexes := unusedDependencyIndexesForFilePathToUnusedDependencyFilePaths(
+			fileDescriptorProto,
+			filePathToUnusedDependencyFilePaths[fileDescriptorProto.GetName()],
+		)
+		protoFileDescriptors[i] = &descriptorv1.FileDescriptor{
+			FileDescriptorProto: fileDescriptorProto,
+			IsImport:            !isNotImport,
+			IsSyntaxUnspecified: isSyntaxUnspecified,
+			UnusedDependency:    unusedDependencyIndexes,
+		}
+	}
+	return descriptor.FileDescriptorsForProtoFileDescriptors(protoFileDescriptors)
+}
+
+func unusedDependencyIndexesForFilePathToUnusedDependencyFilePaths(
+	fileDescriptorProto *descriptorpb.FileDescriptorProto,
+	unusedDependencyFilePaths map[string]struct{},
+) []int32 {
+	unusedDependencyIndexes := make([]int32, 0, len(unusedDependencyFilePaths))
+	if len(unusedDependencyFilePaths) == 0 {
+		return unusedDependencyIndexes
+	}
+	dependencyFilePaths := fileDescriptorProto.GetDependency()
+	for i := range dependencyFilePaths {
+		if _, ok := unusedDependencyFilePaths[dependencyFilePaths[i]]; ok {
+			unusedDependencyIndexes = append(unusedDependencyIndexes, int32(i))
+		}
+	}
+	return unusedDependencyIndexes
+}
+
+func maybeAddSyntaxUnspecified(
+	syntaxUnspecifiedFilePaths map[string]struct{},
+	errorWithPos reporter.ErrorWithPos,
+) {
+	if !errors.Is(errorWithPos, parser.ErrNoSyntax) {
+		return
+	}
+	syntaxUnspecifiedFilePaths[errorWithPos.GetPosition().Filename] = struct{}{}
+}
+
+func maybeAddUnusedDependency(
+	filePathToUnusedDependencyFilePaths map[string]map[string]struct{},
+	errorWithPos reporter.ErrorWithPos,
+) {
+	var errorUnusedImport linker.ErrorUnusedImport
+	if !errors.As(errorWithPos, &errorUnusedImport) {
+		return
+	}
+	pos := errorWithPos.GetPosition()
+	unusedDependencyFilePaths, ok := filePathToUnusedDependencyFilePaths[pos.Filename]
+	if !ok {
+		unusedDependencyFilePaths = make(map[string]struct{})
+		filePathToUnusedDependencyFilePaths[pos.Filename] = unusedDependencyFilePaths
+	}
+	unusedDependencyFilePaths[errorUnusedImport.UnusedImport()] = struct{}{}
+}
+
+func fileDescriptorSetForFileDescriptors[D protoreflect.FileDescriptor](files []D) *descriptorpb.FileDescriptorSet {
+	soFar := make(map[string]struct{}, len(files))
+	slice := make([]*descriptorpb.FileDescriptorProto, 0, len(files))
+	for _, file := range files {
+		toFileDescriptorProtoSlice(file, &slice, soFar)
+	}
+	return &descriptorpb.FileDescriptorSet{File: slice}
+}
+
+func toFileDescriptorProtoSlice(file protoreflect.FileDescriptor, results *[]*descriptorpb.FileDescriptorProto, soFar map[string]struct{}) {
+	if _, exists := soFar[file.Path()]; exists {
+		return
+	}
+	soFar[file.Path()] = struct{}{}
+	// Add dependencies first so the resulting slice is in topological order
+	imports := file.Imports()
+	for i, length := 0, imports.Len(); i < length; i++ {
+		toFileDescriptorProtoSlice(imports.Get(i).FileDescriptor, results, soFar)
+	}
+	*results = append(*results, protoutil.ProtoFromFileDescriptor(file))
+}
+
+func fromSlashPaths(paths []string) []string {
+	fromSlashPaths := make([]string, len(paths))
+	for i, path := range paths {
+		fromSlashPaths[i] = filepath.Clean(filepath.FromSlash(path))
+	}
+	return fromSlashPaths
 }

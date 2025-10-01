@@ -1,4 +1,4 @@
-// Copyright 2024 Buf Technologies, Inc.
+// Copyright 2024-2025 Buf Technologies, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import (
 	"buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
 	"buf.build/go/bufplugin/internal/pkg/thread"
 	"buf.build/go/bufplugin/internal/pkg/xslices"
-	"github.com/bufbuild/protovalidate-go"
+	"buf.build/go/protovalidate"
 	"pluginrpc.com/pluginrpc"
 )
 
@@ -60,7 +60,7 @@ func CheckServiceHandlerWithParallelism(parallelism int) CheckServiceHandlerOpti
 type checkServiceHandler struct {
 	spec                 *Spec
 	parallelism          int
-	validator            *protovalidate.Validator
+	validator            protovalidate.Validator
 	rules                []Rule
 	ruleIDToRule         map[string]Rule
 	ruleIDToRuleHandler  map[string]RuleHandler
@@ -257,7 +257,7 @@ func (c *checkServiceHandler) getRulesAndNextPageToken(pageSize int, pageToken s
 		pageSize = defaultPageSize
 	}
 	resultRules := make([]Rule, 0, len(c.rules)-index)
-	for i := 0; i < pageSize; i++ {
+	for range pageSize {
 		if index >= len(c.rules) {
 			break
 		}
@@ -284,7 +284,7 @@ func (c *checkServiceHandler) getCategoriesAndNextPageToken(pageSize int, pageTo
 		pageSize = defaultPageSize
 	}
 	resultCategories := make([]Category, 0, len(c.categories)-index)
-	for i := 0; i < pageSize; i++ {
+	for range pageSize {
 		if index >= len(c.categories) {
 			break
 		}

@@ -1,4 +1,4 @@
-// Copyright 2024 Buf Technologies, Inc.
+// Copyright 2024-2025 Buf Technologies, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -114,4 +114,38 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 	pluginrpcError = &pluginrpc.Error{}
 	require.ErrorAs(t, err, &pluginrpcError)
 	require.Equal(t, pluginrpc.CodeInvalidArgument, pluginrpcError.Code())
+}
+
+func TestCheckServiceHandlerNoSourceCodeInfo(t *testing.T) {
+	t.Parallel()
+
+	checkServiceHandler, err := NewCheckServiceHandler(
+		&Spec{
+			Rules: []*RuleSpec{
+				testNewSimpleLintRuleSpec("RULE1", nil, true, false, nil),
+			},
+		},
+	)
+	require.NoError(t, err)
+
+	_, err = checkServiceHandler.Check(
+		context.Background(),
+		&checkv1.CheckRequest{
+			FileDescriptors: []*descriptorv1.FileDescriptor{
+				{
+					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
+						Name: proto.String("foo.proto"),
+					},
+				},
+			},
+			AgainstFileDescriptors: []*descriptorv1.FileDescriptor{
+				{
+					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
+						Name: proto.String("foo.proto"),
+					},
+				},
+			},
+		},
+	)
+	require.NoError(t, err)
 }
