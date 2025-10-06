@@ -331,8 +331,8 @@ func compile(ctx context.Context, dirPaths []string, filePaths []string) ([]desc
 			},
 		),
 		Reporter: reporter.NewReporter(
-			func(reporter.ErrorWithPos) error {
-				return nil
+			func(err reporter.ErrorWithPos) error {
+				return err
 			},
 			func(errorWithPos reporter.ErrorWithPos) {
 				warningErrorsWithPos = append(warningErrorsWithPos, errorWithPos)
