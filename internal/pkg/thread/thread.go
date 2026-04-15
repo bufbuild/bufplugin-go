@@ -72,8 +72,7 @@ func Parallelize(ctx context.Context, jobs []func(context.Context) error, option
 				retErr = errors.Join(retErr, ctx.Err())
 			default:
 				job := job
-				wg.Add(1)
-				go func() {
+				wg.Go(func() {
 					if err := job(ctx); err != nil {
 						lock.Lock()
 						retErr = errors.Join(retErr, err)
@@ -84,8 +83,7 @@ func Parallelize(ctx context.Context, jobs []func(context.Context) error, option
 					}
 					// This will never block.
 					<-semaphoreC
-					wg.Done()
-				}()
+				})
 			}
 		}
 	}

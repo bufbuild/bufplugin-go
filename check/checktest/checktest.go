@@ -76,7 +76,7 @@ type CheckTest struct {
 //   - Call Check on the Client.
 //   - Compare the resulting Annotations with the ExpectedAnnotations, failing if there is a mismatch.
 func (c CheckTest) Run(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	require.NotNil(t, c.Request)
 	require.NotNil(t, c.Spec)

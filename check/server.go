@@ -18,6 +18,7 @@ import (
 	"buf.build/go/bufplugin/info"
 	checkv1pluginrpc "buf.build/go/bufplugin/internal/gen/buf/plugin/check/v1/v1pluginrpc"
 	infov1pluginrpc "buf.build/go/bufplugin/internal/gen/buf/plugin/info/v1/v1pluginrpc"
+	"buf.build/go/protovalidate"
 	"pluginrpc.com/pluginrpc"
 )
 
@@ -36,13 +37,26 @@ func NewServer(spec *Spec, options ...ServerOption) (pluginrpc.Server, error) {
 		option(serverOptions)
 	}
 
-	checkServiceHandler, err := NewCheckServiceHandler(spec, CheckServiceHandlerWithParallelism(serverOptions.parallelism))
+	checkServiceHandlerOptions := []CheckServiceHandlerOption{
+		CheckServiceHandlerWithParallelism(serverOptions.parallelism),
+	}
+	if serverOptions.validator != nil {
+		checkServiceHandlerOptions = append(checkServiceHandlerOptions, CheckServiceHandlerWithValidator(serverOptions.validator))
+	}
+	checkServiceHandler, err := NewCheckServiceHandler(spec, checkServiceHandlerOptions...)
 	if err != nil {
 		return nil, err
 	}
 	var pluginInfoServiceHandler infov1pluginrpc.PluginInfoServiceHandler
 	if spec.Info != nil {
-		pluginInfoServiceHandler, err = info.NewPluginInfoServiceHandler(spec.Info)
+		var pluginInfoOptions []info.PluginInfoServiceHandlerOption
+		if serverOptions.validator != nil {
+			pluginInfoOptions = append(pluginInfoOptions, info.PluginInfoServiceHandlerWithValidator(serverOptions.validator))
+		}
+		pluginInfoServiceHandler, err = info.NewPluginInfoServiceHandler(
+			spec.Info,
+			pluginInfoOptions...,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -113,8 +127,17 @@ func ServerWithParallelism(parallelism int) ServerOption {
 	}
 }
 
+// ServerWithValidator allows overriding the default validator used by the handler.
+// By default, [protovalidate.GlobalValidator] is used.
+func ServerWithValidator(validator protovalidate.Validator) ServerOption {
+	return func(options *serverOptions) {
+		options.validator = validator
+	}
+}
+
 type serverOptions struct {
 	parallelism int
+	validator   protovalidate.Validator
 }
 
 func newServerOptions() *serverOptions {

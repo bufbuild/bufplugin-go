@@ -32,13 +32,25 @@ func NewPluginInfoServiceHandler(spec *Spec, options ...PluginInfoServiceHandler
 // PluginInfoServiceHandlerOption is an option for PluginInfoServiceHandler.
 type PluginInfoServiceHandlerOption func(*pluginInfoServiceHandlerOptions)
 
+// PluginInfoServiceHandlerWithValidator allows overriding the default validator used by the handler.
+// By default, [protovalidate.GlobalValidator] is used.
+func PluginInfoServiceHandlerWithValidator(validator protovalidate.Validator) PluginInfoServiceHandlerOption {
+	return func(options *pluginInfoServiceHandlerOptions) {
+		options.validator = validator
+	}
+}
+
 // *** PRIVATE ***
 
 type pluginInfoServiceHandler struct {
 	getPluginInfoResponse *infov1.GetPluginInfoResponse
 }
 
-func newPluginInfoServiceHandler(spec *Spec, _ ...PluginInfoServiceHandlerOption) (*pluginInfoServiceHandler, error) {
+func newPluginInfoServiceHandler(spec *Spec, options ...PluginInfoServiceHandlerOption) (*pluginInfoServiceHandler, error) {
+	opts := newPluginInfoServiceHandlerOptions()
+	for _, opt := range options {
+		opt(opts)
+	}
 	// Also calls ValidateSpec.
 	pluginInfo, err := NewPluginInfoForSpec(spec)
 	if err != nil {
@@ -48,9 +60,9 @@ func newPluginInfoServiceHandler(spec *Spec, _ ...PluginInfoServiceHandlerOption
 	getPluginInfoResponse := &infov1.GetPluginInfoResponse{
 		PluginInfo: protoPluginInfo,
 	}
-	validator, err := protovalidate.New()
-	if err != nil {
-		return nil, err
+	validator := opts.validator
+	if validator == nil {
+		validator = protovalidate.GlobalValidator
 	}
 	if err := validator.Validate(getPluginInfoResponse); err != nil {
 		return nil, err
@@ -64,4 +76,10 @@ func (c *pluginInfoServiceHandler) GetPluginInfo(context.Context, *infov1.GetPlu
 	return c.getPluginInfoResponse, nil
 }
 
-type pluginInfoServiceHandlerOptions struct{}
+type pluginInfoServiceHandlerOptions struct {
+	validator protovalidate.Validator
+}
+
+func newPluginInfoServiceHandlerOptions() *pluginInfoServiceHandlerOptions {
+	return &pluginInfoServiceHandlerOptions{}
+}

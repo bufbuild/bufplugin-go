@@ -25,7 +25,7 @@ import (
 func TestBasic(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	var count int
 	singleton := NewSingleton(

@@ -15,7 +15,6 @@
 package check
 
 import (
-	"context"
 	"fmt"
 	"slices"
 	"testing"
@@ -34,7 +33,7 @@ func TestClientListRulesCategoriesSimple(t *testing.T) {
 }
 
 func testClientListRulesCategoriesSimple(t *testing.T, options ...ClientForSpecOption) {
-	ctx := context.Background()
+	ctx := t.Context()
 	client, err := NewClientForSpec(
 		&Spec{
 			Rules: []*RuleSpec{
@@ -147,7 +146,7 @@ func testClientListRulesCount(t *testing.T, count int) {
 	slices.Reverse(ruleSpecsOutOfOrder)
 	client, err := NewClientForSpec(&Spec{Rules: ruleSpecsOutOfOrder})
 	require.NoError(t, err)
-	rules, err := client.ListRules(context.Background())
+	rules, err := client.ListRules(t.Context())
 	require.NoError(t, err)
 	require.Equal(t, count, len(rules))
 	for i := range count {
@@ -175,7 +174,7 @@ func TestPluginInfo(t *testing.T) {
 		},
 	)
 	require.NoError(t, err)
-	pluginInfo, err := client.GetPluginInfo(context.Background())
+	pluginInfo, err := client.GetPluginInfo(t.Context())
 	require.NoError(t, err)
 	license := pluginInfo.License()
 	require.NotNil(t, license)
@@ -201,7 +200,7 @@ func TestPluginInfoUnimplemented(t *testing.T) {
 		},
 	)
 	require.NoError(t, err)
-	_, err = client.GetPluginInfo(context.Background())
+	_, err = client.GetPluginInfo(t.Context())
 	pluginrpcError := &pluginrpc.Error{}
 	require.Error(t, err)
 	require.ErrorAs(t, err, &pluginrpcError)

@@ -40,6 +40,6 @@ func (u *unexpectedOptionValueTypeError) Error() string {
 	var sb strings.Builder
 	_, _ = sb.WriteString(`unexpected type for option value "`)
 	_, _ = sb.WriteString(u.key)
-	_, _ = sb.WriteString(fmt.Sprintf(`": expected %T, got %T`, u.expected, u.actual))
+	_, _ = fmt.Fprintf(&sb, `": expected %T, got %T`, u.expected, u.actual)
 	return sb.String()
 }

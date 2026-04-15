@@ -55,6 +55,14 @@ func CheckServiceHandlerWithParallelism(parallelism int) CheckServiceHandlerOpti
 	}
 }
 
+// CheckServiceHandlerWithValidator allows overriding the default validator used by the handler.
+// By default, [protovalidate.GlobalValidator] is used.
+func CheckServiceHandlerWithValidator(validator protovalidate.Validator) CheckServiceHandlerOption {
+	return func(checkServiceHandlerOptions *checkServiceHandlerOptions) {
+		checkServiceHandlerOptions.validator = validator
+	}
+}
+
 // *** PRIVATE ***
 
 type checkServiceHandler struct {
@@ -118,9 +126,9 @@ func newCheckServiceHandler(spec *Spec, options ...CheckServiceHandlerOption) (*
 		ruleIDToRule[id] = rule
 		ruleIDToIndex[id] = i
 	}
-	validator, err := protovalidate.New()
-	if err != nil {
-		return nil, err
+	validator := checkServiceHandlerOptions.validator
+	if validator == nil {
+		validator = protovalidate.GlobalValidator
 	}
 	return &checkServiceHandler{
 		spec:                 spec,
@@ -300,6 +308,7 @@ func (c *checkServiceHandler) getCategoriesAndNextPageToken(pageSize int, pageTo
 
 type checkServiceHandlerOptions struct {
 	parallelism int
+	validator   protovalidate.Validator
 }
 
 func newCheckServiceHandlerOptions() *checkServiceHandlerOptions {

@@ -89,7 +89,7 @@ func WithAgainstFileDescriptors(againstFileDescriptors []descriptor.FileDescript
 	}
 }
 
-// WithOption adds the given Options to the Request.
+// WithOptions adds the given Options to the Request.
 func WithOptions(options option.Options) RequestOption {
 	return func(requestOptions *requestOptions) {
 		requestOptions.options = options
@@ -204,10 +204,7 @@ func (r *request) toProtos() ([]*checkv1.CheckRequest, error) {
 	var checkRequests []*checkv1.CheckRequest
 	for i := 0; i < len(r.ruleIDs); i += checkRuleIDPageSize {
 		start := i
-		end := start + checkRuleIDPageSize
-		if end > len(r.ruleIDs) {
-			end = len(r.ruleIDs)
-		}
+		end := min(start+checkRuleIDPageSize, len(r.ruleIDs))
 		checkRequests = append(
 			checkRequests,
 			&checkv1.CheckRequest{

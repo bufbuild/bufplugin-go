@@ -15,7 +15,6 @@
 package info
 
 import (
-	"context"
 	"testing"
 
 	infov1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/info/v1"
@@ -33,7 +32,7 @@ func TestPluginInfoServiceHandlerBasic(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = pluginInfoServiceHandler.GetPluginInfo(
-		context.Background(),
+		t.Context(),
 		&infov1.GetPluginInfoRequest{},
 	)
 	require.NoError(t, err)

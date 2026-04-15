@@ -12,11 +12,8 @@ export GOBIN := $(abspath $(BIN))
 COPYRIGHT_YEARS := 2024-2025
 LICENSE_IGNORE := --ignore testdata/
 
-BUF_VERSION := v1.50.0
-GO_MOD_GOTOOLCHAIN := go1.23.5
-GOLANGCI_LINT_VERSION := v1.63.4
-# https://github.com/golangci/golangci-lint/issues/4837
-GOLANGCI_LINT_GOTOOLCHAIN := $(GO_MOD_GOTOOLCHAIN)
+BUF_VERSION := v1.67.0
+GOLANGCI_LINT_VERSION := v2.11.4
 #GO_GET_PKGS :=
 
 .PHONY: help
@@ -48,11 +45,11 @@ install: ## Install all binaries
 .PHONY: lint
 lint: $(BIN)/golangci-lint ## Lint
 	go vet ./...
-	GOTOOLCHAIN=$(GOLANGCI_LINT_GOTOOLCHAIN) golangci-lint run --modules-download-mode=readonly --timeout=3m0s
+	golangci-lint run --modules-download-mode=readonly --timeout=3m0s
 
 .PHONY: lintfix
 lintfix: $(BIN)/golangci-lint ## Automatically fix some lint errors
-	GOTOOLCHAIN=$(GOLANGCI_LINT_GOTOOLCHAIN) golangci-lint run --fix --modules-download-mode=readonly --timeout=3m0s
+	golangci-lint run --fix --modules-download-mode=readonly --timeout=3m0s
 
 .PHONY: generate
 generate: $(BIN)/buf $(BIN)/protoc-gen-pluginrpc-go $(BIN)/license-header ## Regenerate code and licenses
@@ -65,7 +62,6 @@ generate: $(BIN)/buf $(BIN)/protoc-gen-pluginrpc-go $(BIN)/license-header ## Reg
 
 .PHONY: upgrade
 upgrade: ## Upgrade dependencies
-	go mod edit -toolchain=$(GO_MOD_GOTOOLCHAIN)
 	go get -u -t ./... $(GO_GET_PKGS)
 	go mod tidy -v
 
@@ -84,7 +80,7 @@ $(BIN)/license-header: Makefile
 
 $(BIN)/golangci-lint: Makefile
 	@mkdir -p $(@D)
-	GOTOOLCHAIN=$(GOLANGCI_LINT_GOTOOLCHAIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 
 .PHONY: $(BIN)/protoc-gen-pluginrpc-go
 $(BIN)/protoc-gen-pluginrpc-go:

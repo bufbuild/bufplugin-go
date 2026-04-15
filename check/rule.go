@@ -35,19 +35,19 @@ type Rule interface {
 	//
 	// This uniquely identifies the Rule.
 	ID() string
-	// The categories that the Rule is a part of.
+	// Categories that the Rule is a part of.
 	//
 	// Optional.
 	//
 	// Buf uses categories to include or exclude sets of rules via configuration.
 	Categories() []Category
-	// Whether or not the Rule is a default Rule.
+	// Default defines whether the Rule is a default Rule.
 	//
 	// If a Rule is a default Rule, it will be called if a Request specifies no specific Rule IDs.
 	//
 	// A deprecated rule cannot be a default rule.
 	Default() bool
-	// A user-displayable purpose of the rule.
+	// Purpose is a user-displayable purpose of the rule.
 	//
 	// Always present.
 	//
