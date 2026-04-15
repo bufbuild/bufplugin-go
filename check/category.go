@@ -35,7 +35,7 @@ type Category interface {
 	//
 	// This uniquely identifies the Category.
 	ID() string
-	// A user-displayable purpose of the category.
+	// Purpose is a user-displayable purpose of the category.
 	//
 	// Always present.
 	Purpose() string

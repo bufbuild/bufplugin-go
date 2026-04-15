@@ -108,7 +108,7 @@ func toSnakeCase(s string) string {
 			((i < len(s)-1 && !isSnakeCaseNewWord(rune(s[i+1]), true) && !isDelimiter(rune(s[i+1]))) ||
 				(unicode.IsLower(rune(s[i-1])))):
 			output += "_" + string(c)
-		case !(isDelimiter(c) && output[len(output)-1] == '_'):
+		case !isDelimiter(c) || output[len(output)-1] != '_':
 			output += string(c)
 		}
 	}

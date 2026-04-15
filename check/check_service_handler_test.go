@@ -15,7 +15,6 @@
 package check
 
 import (
-	"context"
 	"testing"
 
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
@@ -39,7 +38,7 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = checkServiceHandler.Check(
-		context.Background(),
+		t.Context(),
 		&checkv1.CheckRequest{
 			FileDescriptors: []*descriptorv1.FileDescriptor{
 				{
@@ -62,7 +61,7 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = checkServiceHandler.Check(
-		context.Background(),
+		t.Context(),
 		&checkv1.CheckRequest{
 			FileDescriptors: []*descriptorv1.FileDescriptor{
 				{
@@ -85,7 +84,7 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 	require.Equal(t, pluginrpc.CodeInvalidArgument, pluginrpcError.Code())
 
 	_, err = checkServiceHandler.Check(
-		context.Background(),
+		t.Context(),
 		&checkv1.CheckRequest{
 			FileDescriptors: []*descriptorv1.FileDescriptor{
 				{
@@ -129,7 +128,7 @@ func TestCheckServiceHandlerNoSourceCodeInfo(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = checkServiceHandler.Check(
-		context.Background(),
+		t.Context(),
 		&checkv1.CheckRequest{
 			FileDescriptors: []*descriptorv1.FileDescriptor{
 				{
