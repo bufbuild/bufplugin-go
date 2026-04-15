@@ -32,9 +32,9 @@ func NewPluginInfoServiceHandler(spec *Spec, options ...PluginInfoServiceHandler
 // PluginInfoServiceHandlerOption is an option for PluginInfoServiceHandler.
 type PluginInfoServiceHandlerOption func(*pluginInfoServiceHandlerOptions)
 
-// PluginInfoHandlerWithValidator allows overriding the default validator used by the handler.
+// PluginInfoServiceHandlerWithValidator allows overriding the default validator used by the handler.
 // By default, [protovalidate.GlobalValidator] is used.
-func PluginInfoHandlerWithValidator(validator protovalidate.Validator) PluginInfoServiceHandlerOption {
+func PluginInfoServiceHandlerWithValidator(validator protovalidate.Validator) PluginInfoServiceHandlerOption {
 	return func(options *pluginInfoServiceHandlerOptions) {
 		options.validator = validator
 	}

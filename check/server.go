@@ -37,19 +37,25 @@ func NewServer(spec *Spec, options ...ServerOption) (pluginrpc.Server, error) {
 		option(serverOptions)
 	}
 
-	checkServiceHandler, err := NewCheckServiceHandler(
-		spec,
+	checkServiceHandlerOptions := []CheckServiceHandlerOption{
 		CheckServiceHandlerWithParallelism(serverOptions.parallelism),
-		CheckServiceHandlerWithValidator(serverOptions.validator),
-	)
+	}
+	if serverOptions.validator != nil {
+		checkServiceHandlerOptions = append(checkServiceHandlerOptions, CheckServiceHandlerWithValidator(serverOptions.validator))
+	}
+	checkServiceHandler, err := NewCheckServiceHandler(spec, checkServiceHandlerOptions...)
 	if err != nil {
 		return nil, err
 	}
 	var pluginInfoServiceHandler infov1pluginrpc.PluginInfoServiceHandler
 	if spec.Info != nil {
+		var pluginInfoOptions []info.PluginInfoServiceHandlerOption
+		if serverOptions.validator != nil {
+			pluginInfoOptions = append(pluginInfoOptions, info.PluginInfoServiceHandlerWithValidator(serverOptions.validator))
+		}
 		pluginInfoServiceHandler, err = info.NewPluginInfoServiceHandler(
 			spec.Info,
-			info.PluginInfoHandlerWithValidator(serverOptions.validator),
+			pluginInfoOptions...,
 		)
 		if err != nil {
 			return nil, err
