@@ -16,43 +16,23 @@ package check_test
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"buf.build/go/bufplugin/check"
 	"buf.build/go/bufplugin/check/checktest"
 	"buf.build/go/bufplugin/check/checkutil"
 	"buf.build/go/bufplugin/descriptor"
-	"github.com/stretchr/testify/require"
 )
 
-const protoFile = `
-syntax = "proto3";
-import "google/protobuf/descriptor.proto";
-extend google.protobuf.MessageOptions {
-  X x = 5000;
-}
-message X {
-  string y = 1;
-}
-message Foo {
-  option deprecated = true;
-  option (x).y = "z";
-}
-`
-
-// TestIssue20 checks that an annotation by source path points to the nearest parent if the original one is missing.
-func TestIssue20(t *testing.T) {
+// TestSourceLocationFallback checks that an annotation by source path points to the nearest parent if the original one is missing.
+func TestSourceLocationFallback(t *testing.T) {
 	t.Parallel()
-	dir := t.TempDir()
-	const fileName = "file.proto"
-	const ruleID = "TEST_MISSING_SOURCE_LOCATION"
-	require.NoError(t, os.WriteFile(filepath.Join(dir, fileName), []byte(protoFile), 0666))
+	const fileName = "source_location_fallback.proto"
+	const ruleID = "TEST_SOURCE_LOCATION_FALLBACK"
 	checktest.CheckTest{
 		Request: &checktest.RequestSpec{
 			Files: &checktest.ProtoFileSpec{
-				DirPaths:  []string{dir},
+				DirPaths:  []string{"testdata"},
 				FilePaths: []string{fileName},
 			},
 			RuleIDs: []string{ruleID},
@@ -113,9 +93,9 @@ func TestIssue20(t *testing.T) {
 				Message: "Annotation for message",
 				FileLocation: &checktest.ExpectedFileLocation{
 					FileName:    fileName,
-					StartLine:   9,
+					StartLine:   12,
 					StartColumn: 0,
-					EndLine:     12,
+					EndLine:     15,
 					EndColumn:   1,
 				},
 			},
@@ -124,9 +104,9 @@ func TestIssue20(t *testing.T) {
 				Message: "Annotation for option (x) points to first message option",
 				FileLocation: &checktest.ExpectedFileLocation{
 					FileName:    fileName,
-					StartLine:   10,
+					StartLine:   13,
 					StartColumn: 2,
-					EndLine:     10,
+					EndLine:     13,
 					EndColumn:   27,
 				},
 			},
@@ -135,9 +115,9 @@ func TestIssue20(t *testing.T) {
 				Message: "Annotation for option (x).y",
 				FileLocation: &checktest.ExpectedFileLocation{
 					FileName:    fileName,
-					StartLine:   11,
+					StartLine:   14,
 					StartColumn: 2,
-					EndLine:     11,
+					EndLine:     14,
 					EndColumn:   21,
 				},
 			},

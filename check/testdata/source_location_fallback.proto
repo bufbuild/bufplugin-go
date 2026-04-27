@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.MessageOptions {
+  X x = 5000;
+}
+
+message X {
+  string y = 1;
+}
+
+message Foo {
+  option deprecated = true;
+  option (x).y = "z";
+}
