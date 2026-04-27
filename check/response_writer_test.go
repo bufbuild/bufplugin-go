@@ -24,16 +24,16 @@ import (
 	"buf.build/go/bufplugin/descriptor"
 )
 
-// TestSourceLocationFallback checks that an annotation by source path points to the nearest parent if the original one is missing.
+// TestSourceLocationFallback checks that an annotation by source path points to the nearest location if the original one is missing.
 func TestSourceLocationFallback(t *testing.T) {
 	t.Parallel()
-	const fileName = "source_location_fallback.proto"
+	const file = "source_location_fallback.proto"
 	const ruleID = "TEST_SOURCE_LOCATION_FALLBACK"
 	checktest.CheckTest{
 		Request: &checktest.RequestSpec{
 			Files: &checktest.ProtoFileSpec{
 				DirPaths:  []string{"testdata"},
-				FilePaths: []string{fileName},
+				FilePaths: []string{file},
 			},
 			RuleIDs: []string{ruleID},
 		},
@@ -47,39 +47,54 @@ func TestSourceLocationFallback(t *testing.T) {
 						_ context.Context,
 						writer check.ResponseWriter,
 						_ check.Request,
-						file descriptor.FileDescriptor,
+						fd descriptor.FileDescriptor,
 					) error {
-						foo := file.ProtoreflectFileDescriptor().Messages().ByName("Foo")
-						fooPath := file.ProtoreflectFileDescriptor().SourceLocations().ByDescriptor(foo).Path
+						const options = 7 // google.protobuf.DescriptorProto.options
+						const a = 5000    // a
+						const ab = 1      // A.b
+						const ac = 2      // A.c
+						const acd = 3     // C.d
+
+						fooMsg := fd.ProtoreflectFileDescriptor().Messages().ByName("Foo")
+						foo := fd.ProtoreflectFileDescriptor().SourceLocations().ByDescriptor(fooMsg).Path
 						writer.AddAnnotation(
-							check.WithMessage("Annotation for message"),
-							check.WithFileNameAndSourcePath(
-								fileName,
-								fooPath,
-							),
+							check.WithMessage("Foo - message - right location"),
+							check.WithFileNameAndSourcePath(file, foo),
 						)
 						writer.AddAnnotation(
-							check.WithMessage("Annotation for option (x).y"),
-							check.WithFileNameAndSourcePath(
-								fileName,
-								append(
-									fooPath,
-									7,    // google.protobuf.DescriptorProto.options
-									5000, // x
-									1,    // X.y
-								),
-							),
+							check.WithMessage("Foo - option (a) - fallback to (a).b"),
+							check.WithFileNameAndSourcePath(file, append(foo, options, a)),
 						)
 						writer.AddAnnotation(
-							check.WithMessage("Annotation for option (x) points to first message option"),
-							check.WithFileNameAndSourcePath(
-								fileName,
-								append(
-									fooPath,
-									7,    // google.protobuf.DescriptorProto.options
-									5000, // x
-								),
-							),
+							check.WithMessage("Foo - option (a).b - right location"),
+							check.WithFileNameAndSourcePath(file, append(foo, options, a, ab)),
+						)
+						writer.AddAnnotation(
+							check.WithMessage("Foo - option (a).c - fallback to (a).c.d"),
+							check.WithFileNameAndSourcePath(file, append(foo, options, a, ac)),
+						)
+						writer.AddAnnotation(
+							check.WithMessage("Foo - option (a).c.d - right location"),
+							check.WithFileNameAndSourcePath(file, append(foo, options, a, ac, acd)),
+						)
+
+						barMsg := fd.ProtoreflectFileDescriptor().Messages().ByName("Bar")
+						bar := fd.ProtoreflectFileDescriptor().SourceLocations().ByDescriptor(barMsg).Path
+						writer.AddAnnotation(
+							check.WithMessage("Bar - option (a) - fallback to (a).c"),
+							check.WithFileNameAndSourcePath(file, append(bar, options, a)),
+						)
+						writer.AddAnnotation(
+							check.WithMessage("Bar - option (a).c - right location"),
+							check.WithFileNameAndSourcePath(file, append(bar, options, a, ac)),
+						)
+						writer.AddAnnotation(
+							check.WithMessage("Bar - option (a).c.d - right location"),
+							check.WithFileNameAndSourcePath(file, append(bar, options, a, ac, acd)),
+						)
+						writer.AddAnnotation(
+							check.WithMessage("Bar - option (a).b - right location"),
+							check.WithFileNameAndSourcePath(file, append(bar, options, a, ab)),
 						)
 						return nil
 					},
@@ -88,36 +103,105 @@ func TestSourceLocationFallback(t *testing.T) {
 			}},
 		},
 		ExpectedAnnotations: []checktest.ExpectedAnnotation{
+			// Foo
 			{
 				RuleID:  ruleID,
-				Message: "Annotation for message",
+				Message: "Foo - message - right location",
 				FileLocation: &checktest.ExpectedFileLocation{
-					FileName:    fileName,
-					StartLine:   12,
+					FileName:    file,
+					StartLine:   17,
 					StartColumn: 0,
-					EndLine:     15,
+					EndLine:     21,
 					EndColumn:   1,
 				},
 			},
 			{
 				RuleID:  ruleID,
-				Message: "Annotation for option (x) points to first message option",
+				Message: "Foo - option (a) - fallback to (a).b",
 				FileLocation: &checktest.ExpectedFileLocation{
-					FileName:    fileName,
-					StartLine:   13,
+					FileName:    file,
+					StartLine:   19,
 					StartColumn: 2,
-					EndLine:     13,
-					EndColumn:   27,
+					EndLine:     19,
+					EndColumn:   21,
 				},
 			},
 			{
 				RuleID:  ruleID,
-				Message: "Annotation for option (x).y",
+				Message: "Foo - option (a).b - right location",
 				FileLocation: &checktest.ExpectedFileLocation{
-					FileName:    fileName,
-					StartLine:   14,
+					FileName:    file,
+					StartLine:   19,
 					StartColumn: 2,
-					EndLine:     14,
+					EndLine:     19,
+					EndColumn:   21,
+				},
+			},
+			{
+				RuleID:  ruleID,
+				Message: "Foo - option (a).c - fallback to (a).c.d",
+				FileLocation: &checktest.ExpectedFileLocation{
+					FileName:    file,
+					StartLine:   20,
+					StartColumn: 2,
+					EndLine:     20,
+					EndColumn:   23,
+				},
+			},
+			{
+				RuleID:  ruleID,
+				Message: "Foo - option (a).c.d - right location",
+				FileLocation: &checktest.ExpectedFileLocation{
+					FileName:    file,
+					StartLine:   20,
+					StartColumn: 2,
+					EndLine:     20,
+					EndColumn:   23,
+				},
+			},
+
+			// Bar
+			{
+				RuleID:  ruleID,
+				Message: "Bar - option (a) - fallback to (a).c",
+				FileLocation: &checktest.ExpectedFileLocation{
+					FileName:    file,
+					StartLine:   25,
+					StartColumn: 2,
+					EndLine:     27,
+					EndColumn:   4,
+				},
+			},
+			{
+				RuleID:  ruleID,
+				Message: "Bar - option (a).c - right location",
+				FileLocation: &checktest.ExpectedFileLocation{
+					FileName:    file,
+					StartLine:   25,
+					StartColumn: 2,
+					EndLine:     27,
+					EndColumn:   4,
+				},
+			},
+			{
+				RuleID:  ruleID,
+				Message: "Bar - option (a).c.d - right location",
+				FileLocation: &checktest.ExpectedFileLocation{
+					FileName:    file,
+					StartLine:   26,
+					StartColumn: 4,
+					EndLine:     26,
+					EndColumn:   10,
+				},
+			},
+			{
+				RuleID:  ruleID,
+				Message: "Bar - option (a).b - right location",
+				FileLocation: &checktest.ExpectedFileLocation{
+					FileName:    file,
+					StartLine:   28,
+					StartColumn: 2,
+					EndLine:     28,
 					EndColumn:   21,
 				},
 			},

@@ -3,14 +3,28 @@ syntax = "proto3";
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.MessageOptions {
-  X x = 5000;
+  A a = 5000;
 }
 
-message X {
-  string y = 1;
+message A {
+  string b = 1;
+  C c = 2;
+}
+
+message C {
+  string d = 3;
 }
 
 message Foo {
   option deprecated = true;
-  option (x).y = "z";
+  option (a).b = "x";
+  option (a).c.d = "y";
+}
+
+message Bar {
+  option deprecated = true;
+  option (a).c = {
+    d: "y",
+  };
+  option (a).b = "x";
 }
