@@ -47,54 +47,54 @@ func TestSourceLocationFallback(t *testing.T) {
 						_ context.Context,
 						writer check.ResponseWriter,
 						_ check.Request,
-						fd descriptor.FileDescriptor,
+						fileDescriptor descriptor.FileDescriptor,
 					) error {
-						const options = 7 // google.protobuf.DescriptorProto.options
-						const a = 5000    // a
-						const ab = 1      // A.b
-						const ac = 2      // A.c
-						const acd = 3     // C.d
+						const optsNum = 7 // google.protobuf.DescriptorProto.options
+						const aNum = 5000 // a
+						const abNum = 1   // A.b
+						const acNum = 2   // A.c
+						const acdNum = 3  // C.d
 
-						fooMsg := fd.ProtoreflectFileDescriptor().Messages().ByName("Foo")
-						foo := fd.ProtoreflectFileDescriptor().SourceLocations().ByDescriptor(fooMsg).Path
+						fooMsg := fileDescriptor.ProtoreflectFileDescriptor().Messages().ByName("Foo")
+						foo := fileDescriptor.ProtoreflectFileDescriptor().SourceLocations().ByDescriptor(fooMsg).Path
 						writer.AddAnnotation(
 							check.WithMessage("Foo - message - right location"),
 							check.WithFileNameAndSourcePath(file, foo),
 						)
 						writer.AddAnnotation(
 							check.WithMessage("Foo - option (a) - fallback to (a).b"),
-							check.WithFileNameAndSourcePath(file, append(foo, options, a)),
+							check.WithFileNameAndSourcePath(file, append(foo, optsNum, aNum)),
 						)
 						writer.AddAnnotation(
 							check.WithMessage("Foo - option (a).b - right location"),
-							check.WithFileNameAndSourcePath(file, append(foo, options, a, ab)),
+							check.WithFileNameAndSourcePath(file, append(foo, optsNum, aNum, abNum)),
 						)
 						writer.AddAnnotation(
 							check.WithMessage("Foo - option (a).c - fallback to (a).c.d"),
-							check.WithFileNameAndSourcePath(file, append(foo, options, a, ac)),
+							check.WithFileNameAndSourcePath(file, append(foo, optsNum, aNum, acNum)),
 						)
 						writer.AddAnnotation(
 							check.WithMessage("Foo - option (a).c.d - right location"),
-							check.WithFileNameAndSourcePath(file, append(foo, options, a, ac, acd)),
+							check.WithFileNameAndSourcePath(file, append(foo, optsNum, aNum, acNum, acdNum)),
 						)
 
-						barMsg := fd.ProtoreflectFileDescriptor().Messages().ByName("Bar")
-						bar := fd.ProtoreflectFileDescriptor().SourceLocations().ByDescriptor(barMsg).Path
+						barMsg := fileDescriptor.ProtoreflectFileDescriptor().Messages().ByName("Bar")
+						bar := fileDescriptor.ProtoreflectFileDescriptor().SourceLocations().ByDescriptor(barMsg).Path
 						writer.AddAnnotation(
 							check.WithMessage("Bar - option (a) - fallback to (a).c"),
-							check.WithFileNameAndSourcePath(file, append(bar, options, a)),
+							check.WithFileNameAndSourcePath(file, append(bar, optsNum, aNum)),
 						)
 						writer.AddAnnotation(
 							check.WithMessage("Bar - option (a).c - right location"),
-							check.WithFileNameAndSourcePath(file, append(bar, options, a, ac)),
+							check.WithFileNameAndSourcePath(file, append(bar, optsNum, aNum, acNum)),
 						)
 						writer.AddAnnotation(
 							check.WithMessage("Bar - option (a).c.d - right location"),
-							check.WithFileNameAndSourcePath(file, append(bar, options, a, ac, acd)),
+							check.WithFileNameAndSourcePath(file, append(bar, optsNum, aNum, acNum, acdNum)),
 						)
 						writer.AddAnnotation(
 							check.WithMessage("Bar - option (a).b - right location"),
-							check.WithFileNameAndSourcePath(file, append(bar, options, a, ab)),
+							check.WithFileNameAndSourcePath(file, append(bar, optsNum, aNum, abNum)),
 						)
 						return nil
 					},

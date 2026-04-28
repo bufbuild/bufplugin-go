@@ -345,9 +345,9 @@ func getFileLocationForAddAnnotationOptions(
 }
 
 // nearestLocation returns the best available source location for path, preferring:
-//   1. an exact source location
-//   2. the first descendant source location
-//   3. the nearest ancestor source location
+//  1. an exact source location
+//  2. the first descendant source location
+//  3. the nearest ancestor source location
 func nearestLocation(locations protoreflect.SourceLocations, path protoreflect.SourcePath) protoreflect.SourceLocation {
 	if loc := locations.ByPath(path); len(loc.Path) > 0 {
 		return loc // exact match
@@ -369,11 +369,11 @@ func nearestLocation(locations protoreflect.SourceLocations, path protoreflect.S
 }
 
 func commonLength(a, b protoreflect.SourcePath) int {
-	n := min(len(a), len(b))
-	for i := range n {
+	minLen := min(len(a), len(b))
+	for i := range minLen {
 		if a[i] != b[i] {
 			return i
 		}
 	}
-	return n
+	return minLen
 }
