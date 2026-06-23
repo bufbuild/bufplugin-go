@@ -334,15 +334,46 @@ func getFileLocationForAddAnnotationOptions(
 		return nil, nil
 	}
 	if fileName != "" {
-		var sourceLocation protoreflect.SourceLocation
 		fileDescriptor, ok := fileNameToFileDescriptor[fileName]
 		if !ok {
 			return nil, fmt.Errorf("cannot add annotation for unknown file: %q", fileName)
 		}
-		if len(path) > 0 {
-			sourceLocation = fileDescriptor.ProtoreflectFileDescriptor().SourceLocations().ByPath(path)
-		}
+		sourceLocation := nearestLocation(fileDescriptor.ProtoreflectFileDescriptor().SourceLocations(), path)
 		return descriptor.NewFileLocation(fileDescriptor, sourceLocation), nil
 	}
 	return nil, nil
+}
+
+// nearestLocation returns the best available source location for path, preferring:
+//  1. an exact source location
+//  2. the first descendant source location
+//  3. the nearest ancestor source location
+func nearestLocation(locations protoreflect.SourceLocations, path protoreflect.SourcePath) protoreflect.SourceLocation {
+	if loc := locations.ByPath(path); len(loc.Path) > 0 {
+		return loc // exact match
+	}
+	var bestLoc protoreflect.SourceLocation
+	var bestCommon int
+	for i := range locations.Len() {
+		loc := locations.Get(i)
+		common := commonLength(loc.Path, path)
+		if common == len(path) {
+			return loc // first descendant
+		}
+		if common >= bestCommon {
+			bestLoc = loc
+			bestCommon = common
+		}
+	}
+	return bestLoc // nearest ancestor
+}
+
+func commonLength(a, b protoreflect.SourcePath) int {
+	minLen := min(len(a), len(b))
+	for i := range minLen {
+		if a[i] != b[i] {
+			return i
+		}
+	}
+	return minLen
 }
