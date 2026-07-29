@@ -39,45 +39,45 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 
 	_, err = checkServiceHandler.Check(
 		t.Context(),
-		&checkv1.CheckRequest{
+		checkv1.CheckRequest_builder{
 			FileDescriptors: []*descriptorv1.FileDescriptor{
-				{
+				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name:           proto.String("foo.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
-				},
+				}.Build(),
 			},
 			AgainstFileDescriptors: []*descriptorv1.FileDescriptor{
-				{
+				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name:           proto.String("foo.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
-				},
+				}.Build(),
 			},
-		},
+		}.Build(),
 	)
 	require.NoError(t, err)
 
 	_, err = checkServiceHandler.Check(
 		t.Context(),
-		&checkv1.CheckRequest{
+		checkv1.CheckRequest_builder{
 			FileDescriptors: []*descriptorv1.FileDescriptor{
-				{
+				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name:           proto.String("foo.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
-				},
-				{
+				}.Build(),
+				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name:           proto.String("foo.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
-				},
+				}.Build(),
 			},
-		},
+		}.Build(),
 	)
 	pluginrpcError := &pluginrpc.Error{}
 	require.ErrorAs(t, err, &pluginrpcError)
@@ -85,30 +85,30 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 
 	_, err = checkServiceHandler.Check(
 		t.Context(),
-		&checkv1.CheckRequest{
+		checkv1.CheckRequest_builder{
 			FileDescriptors: []*descriptorv1.FileDescriptor{
-				{
+				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name:           proto.String("foo.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
-				},
+				}.Build(),
 			},
 			AgainstFileDescriptors: []*descriptorv1.FileDescriptor{
-				{
+				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name:           proto.String("bar.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
-				},
-				{
+				}.Build(),
+				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name:           proto.String("bar.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
-				},
+				}.Build(),
 			},
-		},
+		}.Build(),
 	)
 	pluginrpcError = &pluginrpc.Error{}
 	require.ErrorAs(t, err, &pluginrpcError)
@@ -129,22 +129,22 @@ func TestCheckServiceHandlerNoSourceCodeInfo(t *testing.T) {
 
 	_, err = checkServiceHandler.Check(
 		t.Context(),
-		&checkv1.CheckRequest{
+		checkv1.CheckRequest_builder{
 			FileDescriptors: []*descriptorv1.FileDescriptor{
-				{
+				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name: proto.String("foo.proto"),
 					},
-				},
+				}.Build(),
 			},
 			AgainstFileDescriptors: []*descriptorv1.FileDescriptor{
-				{
+				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
 						Name: proto.String("foo.proto"),
 					},
-				},
+				}.Build(),
 			},
-		},
+		}.Build(),
 	)
 	require.NoError(t, err)
 }

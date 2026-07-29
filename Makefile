@@ -33,10 +33,14 @@ clean: ## Delete intermediate build artifacts
 .PHONY: test
 test: build ## Run unit tests
 	go test -vet=off -race -cover ./...
+	@# Also run against the Go Opaque API, which the protoopaque build tag selects
+	@# for the hybrid-generated Protobuf packages we depend on.
+	go test -vet=off -race -cover -tags protoopaque ./...
 
 .PHONY: build
 build: generate ## Build all packages
 	go build ./...
+	go build -tags protoopaque ./...
 
 .PHONY: install
 install: ## Install all binaries
@@ -45,6 +49,7 @@ install: ## Install all binaries
 .PHONY: lint
 lint: $(BIN)/golangci-lint ## Lint
 	go vet ./...
+	go vet -tags protoopaque ./...
 	golangci-lint run --modules-download-mode=readonly --timeout=3m0s
 
 .PHONY: lintfix

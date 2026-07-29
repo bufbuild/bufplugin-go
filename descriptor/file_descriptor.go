@@ -179,12 +179,12 @@ func (f *fileDescriptor) ToProto() *descriptorv1.FileDescriptor {
 	if f == nil {
 		return nil
 	}
-	return &descriptorv1.FileDescriptor{
+	return descriptorv1.FileDescriptor_builder{
 		FileDescriptorProto: f.fileDescriptorProto,
 		IsImport:            f.isImport,
 		IsSyntaxUnspecified: f.isSyntaxUnspecified,
 		UnusedDependency:    f.unusedDependencyIndexes,
-	}
+	}.Build()
 }
 
 func (*fileDescriptor) isFileDescriptor() {}
