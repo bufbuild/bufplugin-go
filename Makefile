@@ -40,7 +40,6 @@ test: build ## Run unit tests
 .PHONY: build
 build: generate ## Build all packages
 	go build ./...
-	go build -tags protoopaque ./...
 
 .PHONY: install
 install: ## Install all binaries
@@ -49,7 +48,6 @@ install: ## Install all binaries
 .PHONY: lint
 lint: $(BIN)/golangci-lint ## Lint
 	go vet ./...
-	go vet -tags protoopaque ./...
 	golangci-lint run --modules-download-mode=readonly --timeout=3m0s
 
 .PHONY: lintfix
