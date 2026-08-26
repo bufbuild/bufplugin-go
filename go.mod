@@ -3,7 +3,7 @@ module buf.build/go/bufplugin
 go 1.26.0
 
 require (
-	buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.36.11-20250718181942-e35f9b667443.1
+	buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.36.12-20260722160903-4d94f3df3a7b.1
 	buf.build/go/protovalidate v1.1.3
 	buf.build/go/spdx v0.2.0
 	github.com/bufbuild/protocompile v0.14.1
