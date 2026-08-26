@@ -29,7 +29,6 @@ import (
 	"reflect"
 
 	optionv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/option/v1"
-	"google.golang.org/protobuf/proto"
 )
 
 // EmptyOptions is an instance of Options with no keys.
@@ -271,19 +270,19 @@ func valueToProtoValue(value any) (*optionv1.Value, error) {
 	switch reflectValue := reflect.ValueOf(value); reflectValue.Kind() {
 	case reflect.Bool:
 		return optionv1.Value_builder{
-			BoolValue: proto.Bool(reflectValue.Bool()),
+			BoolValue: new(reflectValue.Bool()),
 		}.Build(), nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return optionv1.Value_builder{
-			Int64Value: proto.Int64(reflectValue.Int()),
+			Int64Value: new(reflectValue.Int()),
 		}.Build(), nil
 	case reflect.Float32, reflect.Float64:
 		return optionv1.Value_builder{
-			DoubleValue: proto.Float64(reflectValue.Float()),
+			DoubleValue: new(reflectValue.Float()),
 		}.Build(), nil
 	case reflect.String:
 		return optionv1.Value_builder{
-			StringValue: proto.String(reflectValue.String()),
+			StringValue: new(reflectValue.String()),
 		}.Build(), nil
 	case reflect.Slice:
 		if t, ok := value.([]byte); ok {
@@ -304,7 +303,7 @@ func valueToProtoValue(value any) (*optionv1.Value, error) {
 				Values: values,
 			}.Build(),
 		}.Build(), nil
-	case reflect.Invalid, reflect.Uintptr, reflect.Complex64, reflect.Complex128, reflect.Array, reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer | reflect.Ptr, reflect.Struct, reflect.UnsafePointer:
+	case reflect.Invalid, reflect.Uintptr, reflect.Complex64, reflect.Complex128, reflect.Array, reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Struct, reflect.UnsafePointer:
 		return nil, fmt.Errorf("invalid type for Options value %T", value)
 	default:
 		return nil, fmt.Errorf("invalid type for Options value %T", value)
@@ -417,7 +416,7 @@ func validateValue(value any) error {
 			}
 		}
 		return nil
-	case reflect.Invalid, reflect.Uintptr, reflect.Complex64, reflect.Complex128, reflect.Array, reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer | reflect.Ptr, reflect.Struct, reflect.UnsafePointer:
+	case reflect.Invalid, reflect.Uintptr, reflect.Complex64, reflect.Complex128, reflect.Array, reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Struct, reflect.UnsafePointer:
 		return fmt.Errorf("invalid option value: unhandled type %T", value)
 	default:
 		return fmt.Errorf("invalid option value: unhandled type %T", value)

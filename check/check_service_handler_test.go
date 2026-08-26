@@ -20,7 +20,6 @@ import (
 	checkv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/check/v1"
 	descriptorv1 "buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go/buf/plugin/descriptor/v1"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 	"pluginrpc.com/pluginrpc"
 )
@@ -43,7 +42,7 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 			FileDescriptors: []*descriptorv1.FileDescriptor{
 				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
-						Name:           proto.String("foo.proto"),
+						Name:           new("foo.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
 				}.Build(),
@@ -51,7 +50,7 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 			AgainstFileDescriptors: []*descriptorv1.FileDescriptor{
 				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
-						Name:           proto.String("foo.proto"),
+						Name:           new("foo.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
 				}.Build(),
@@ -66,13 +65,13 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 			FileDescriptors: []*descriptorv1.FileDescriptor{
 				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
-						Name:           proto.String("foo.proto"),
+						Name:           new("foo.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
 				}.Build(),
 				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
-						Name:           proto.String("foo.proto"),
+						Name:           new("foo.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
 				}.Build(),
@@ -89,7 +88,7 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 			FileDescriptors: []*descriptorv1.FileDescriptor{
 				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
-						Name:           proto.String("foo.proto"),
+						Name:           new("foo.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
 				}.Build(),
@@ -97,13 +96,13 @@ func TestCheckServiceHandlerUniqueFiles(t *testing.T) {
 			AgainstFileDescriptors: []*descriptorv1.FileDescriptor{
 				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
-						Name:           proto.String("bar.proto"),
+						Name:           new("bar.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
 				}.Build(),
 				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
-						Name:           proto.String("bar.proto"),
+						Name:           new("bar.proto"),
 						SourceCodeInfo: &descriptorpb.SourceCodeInfo{},
 					},
 				}.Build(),
@@ -133,14 +132,14 @@ func TestCheckServiceHandlerNoSourceCodeInfo(t *testing.T) {
 			FileDescriptors: []*descriptorv1.FileDescriptor{
 				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
-						Name: proto.String("foo.proto"),
+						Name: new("foo.proto"),
 					},
 				}.Build(),
 			},
 			AgainstFileDescriptors: []*descriptorv1.FileDescriptor{
 				descriptorv1.FileDescriptor_builder{
 					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
-						Name: proto.String("foo.proto"),
+						Name: new("foo.proto"),
 					},
 				}.Build(),
 			},
