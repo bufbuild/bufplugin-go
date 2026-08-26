@@ -194,11 +194,11 @@ func (r *request) toProtos() ([]*checkv1.CheckRequest, error) {
 	}
 	if len(r.ruleIDs) == 0 {
 		return []*checkv1.CheckRequest{
-			{
+			checkv1.CheckRequest_builder{
 				FileDescriptors:        protoFileDescriptors,
 				AgainstFileDescriptors: protoAgainstFileDescriptors,
 				Options:                protoOptions,
-			},
+			}.Build(),
 		}, nil
 	}
 	var checkRequests []*checkv1.CheckRequest
@@ -207,12 +207,12 @@ func (r *request) toProtos() ([]*checkv1.CheckRequest, error) {
 		end := min(start+checkRuleIDPageSize, len(r.ruleIDs))
 		checkRequests = append(
 			checkRequests,
-			&checkv1.CheckRequest{
+			checkv1.CheckRequest_builder{
 				FileDescriptors:        protoFileDescriptors,
 				AgainstFileDescriptors: protoAgainstFileDescriptors,
 				Options:                protoOptions,
 				RuleIds:                r.ruleIDs[start:end],
-			},
+			}.Build(),
 		)
 	}
 	return checkRequests, nil

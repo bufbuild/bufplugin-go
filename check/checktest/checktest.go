@@ -361,12 +361,12 @@ func compile(ctx context.Context, dirPaths []string, filePaths []string) ([]desc
 			fileDescriptorProto,
 			filePathToUnusedDependencyFilePaths[fileDescriptorProto.GetName()],
 		)
-		protoFileDescriptors[i] = &descriptorv1.FileDescriptor{
+		protoFileDescriptors[i] = descriptorv1.FileDescriptor_builder{
 			FileDescriptorProto: fileDescriptorProto,
 			IsImport:            !isNotImport,
 			IsSyntaxUnspecified: isSyntaxUnspecified,
 			UnusedDependency:    unusedDependencyIndexes,
-		}
+		}.Build()
 	}
 	return descriptor.FileDescriptorsForProtoFileDescriptors(protoFileDescriptors)
 }

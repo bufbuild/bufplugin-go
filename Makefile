@@ -33,6 +33,9 @@ clean: ## Delete intermediate build artifacts
 .PHONY: test
 test: build ## Run unit tests
 	go test -vet=off -race -cover ./...
+	@# Also run against the Go Opaque API, which the protoopaque build tag selects
+	@# for the hybrid-generated Protobuf packages we depend on.
+	go test -vet=off -race -cover -tags protoopaque ./...
 
 .PHONY: build
 build: generate ## Build all packages
