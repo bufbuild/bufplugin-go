@@ -52,7 +52,7 @@ type Request interface {
 	// If empty, all default Rules will be used.
 	// The returned RuleIDs will be sorted.
 	//
-	// This may return more than 250 IDs; the underlying Client implemention is required to do
+	// This may return more than 250 IDs; the underlying Client implementation is required to do
 	// any necessary chunking.
 	//
 	// RuleHandlers can safely ignore this - the handling of RuleIDs will have already

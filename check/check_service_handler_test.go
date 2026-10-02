@@ -147,3 +147,54 @@ func TestCheckServiceHandlerNoSourceCodeInfo(t *testing.T) {
 	)
 	require.NoError(t, err)
 }
+
+func TestCheckServiceHandlerModuleName(t *testing.T) {
+	t.Parallel()
+
+	checkServiceHandler, err := NewCheckServiceHandler(
+		&Spec{
+			Rules: []*RuleSpec{
+				testNewSimpleLintRuleSpec("RULE1", nil, true, false, nil),
+			},
+		},
+	)
+	require.NoError(t, err)
+
+	newCheckRequest := func(moduleName *descriptorv1.ModuleName) *checkv1.CheckRequest {
+		return checkv1.CheckRequest_builder{
+			FileDescriptors: []*descriptorv1.FileDescriptor{
+				descriptorv1.FileDescriptor_builder{
+					FileDescriptorProto: &descriptorpb.FileDescriptorProto{
+						Name: new("foo.proto"),
+					},
+					ModuleName: moduleName,
+				}.Build(),
+			},
+		}.Build()
+	}
+
+	_, err = checkServiceHandler.Check(
+		t.Context(),
+		newCheckRequest(
+			descriptorv1.ModuleName_builder{
+				Registry: "buf.build",
+				Owner:    "acme",
+				Module:   "weather",
+			}.Build(),
+		),
+	)
+	require.NoError(t, err)
+
+	_, err = checkServiceHandler.Check(
+		t.Context(),
+		newCheckRequest(
+			descriptorv1.ModuleName_builder{
+				Owner:  "acme",
+				Module: "weather",
+			}.Build(),
+		),
+	)
+	pluginrpcError := &pluginrpc.Error{}
+	require.ErrorAs(t, err, &pluginrpcError)
+	require.Equal(t, pluginrpc.CodeInvalidArgument, pluginrpcError.Code())
+}

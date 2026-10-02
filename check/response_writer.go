@@ -25,7 +25,7 @@ import (
 
 var errCannotReuseResponseWriter = errors.New("cannot reuse ResponseWriter")
 
-// ResponseWriter is used by plugin implmentations to add Annotations to responses.
+// ResponseWriter is used by plugin implementations to add Annotations to responses.
 //
 // A ResponseWriter is tied to a specific rule, and is passed to a RuleHandler.
 // The ID of the Rule will be automatically populated for any added Annotations.
