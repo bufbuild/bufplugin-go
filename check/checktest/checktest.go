@@ -98,7 +98,7 @@ type RequestSpec struct {
 	//
 	// Required.
 	Files *ProtoFileSpec
-	// AgainstFiles specifies the input against files to test against, if anoy.
+	// AgainstFiles specifies the input against files to test against, if any.
 	AgainstFiles *ProtoFileSpec
 	// RuleIDs are the specific RuleIDs to run.
 	RuleIDs []string
@@ -160,6 +160,12 @@ type ProtoFileSpec struct {
 	//
 	// This corresponds to arguments passed to protoc.
 	FilePaths []string
+	// ModuleName is the name of the module that the FilePaths belong to, in the
+	// form registry/owner/module.
+	//
+	// If set, all files that are not imports will have this ModuleName.
+	// Optional.
+	ModuleName string
 }
 
 // ToFileDescriptors compiles the files into descriptor.FileDescriptors.
@@ -172,7 +178,15 @@ func (p *ProtoFileSpec) ToFileDescriptors(ctx context.Context) ([]descriptor.Fil
 	if err := validateProtoFileSpec(p); err != nil {
 		return nil, err
 	}
-	return compile(ctx, p.DirPaths, p.FilePaths)
+	var moduleName descriptor.ModuleName
+	if p.ModuleName != "" {
+		var err error
+		moduleName, err = descriptor.ParseModuleName(p.ModuleName)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return compile(ctx, p.DirPaths, p.FilePaths, moduleName)
 }
 
 // ExpectedAnnotation contains the values expected from an Annotation.
@@ -315,7 +329,12 @@ func expectedAnnotationForAnnotation(annotation check.Annotation) ExpectedAnnota
 	return expectedAnnotation
 }
 
-func compile(ctx context.Context, dirPaths []string, filePaths []string) ([]descriptor.FileDescriptor, error) {
+func compile(
+	ctx context.Context,
+	dirPaths []string,
+	filePaths []string,
+	moduleName descriptor.ModuleName,
+) ([]descriptor.FileDescriptor, error) {
 	dirPaths = fromSlashPaths(dirPaths)
 	filePaths = fromSlashPaths(filePaths)
 	toSlashFilePathMap := make(map[string]struct{}, len(filePaths))
@@ -361,11 +380,16 @@ func compile(ctx context.Context, dirPaths []string, filePaths []string) ([]desc
 			fileDescriptorProto,
 			filePathToUnusedDependencyFilePaths[fileDescriptorProto.GetName()],
 		)
+		var protoModuleName *descriptorv1.ModuleName
+		if isNotImport && moduleName != nil {
+			protoModuleName = moduleName.ToProto()
+		}
 		protoFileDescriptors[i] = descriptorv1.FileDescriptor_builder{
 			FileDescriptorProto: fileDescriptorProto,
 			IsImport:            !isNotImport,
 			IsSyntaxUnspecified: isSyntaxUnspecified,
 			UnusedDependency:    unusedDependencyIndexes,
+			ModuleName:          protoModuleName,
 		}.Build()
 	}
 	return descriptor.FileDescriptorsForProtoFileDescriptors(protoFileDescriptors)
