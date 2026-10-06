@@ -55,6 +55,11 @@ func TestSourceLocationFallback(t *testing.T) {
 						const acNum = 2   // A.c
 						const acdNum = 3  // C.d
 
+						writer.AddAnnotation(
+							check.WithMessage("File - no source path - no location"),
+							check.WithFileName(file),
+						)
+
 						fooMsg := fileDescriptor.ProtoreflectFileDescriptor().Messages().ByName("Foo")
 						foo := fileDescriptor.ProtoreflectFileDescriptor().SourceLocations().ByDescriptor(fooMsg).Path
 						writer.AddAnnotation(
@@ -103,6 +108,15 @@ func TestSourceLocationFallback(t *testing.T) {
 			}},
 		},
 		ExpectedAnnotations: []checktest.ExpectedAnnotation{
+			// File
+			{
+				RuleID:  ruleID,
+				Message: "File - no source path - no location",
+				FileLocation: &checktest.ExpectedFileLocation{
+					FileName: file,
+				},
+			},
+
 			// Foo
 			{
 				RuleID:  ruleID,
