@@ -2,8 +2,8 @@ buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.36.12-20261002170247-5
 buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.36.12-20261002170247-538130002972.2/go.mod h1:Owcuj2phVyvThVYCD74iSV8ki0dAXw/uxkdcdZScdCc=
 buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260825204119-511051f7f437.1 h1:Slv0uGxx219srASyiaI5C9cDlyG8kNDcXpTSYcuAeE4=
 buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260825204119-511051f7f437.1/go.mod h1:TCt1lluMFnctISJXvkIQ4x3ABrPuUKCWKyjKdkJNBpw=
-buf.build/gen/go/pluginrpc/pluginrpc/protocolbuffers/go v1.36.12-20241007202033-cf42259fcbfc.1 h1:iXXTQ60veYbSOKfSQHT9Q3TfZxasAgTJcbo2fnNCApE=
-buf.build/gen/go/pluginrpc/pluginrpc/protocolbuffers/go v1.36.12-20241007202033-cf42259fcbfc.1/go.mod h1:i5fBCEtqJW2uI1OXKsCBFuZWejoPGWsDmy2ukRE3+vM=
+buf.build/gen/go/pluginrpc/pluginrpc/protocolbuffers/go v1.36.12-20241007202033-cf42259fcbfc.2 h1:9xw8g8Q6zHLC7CO/jtpl2UK0kQticxIG+mI6N86f2/M=
+buf.build/gen/go/pluginrpc/pluginrpc/protocolbuffers/go v1.36.12-20241007202033-cf42259fcbfc.2/go.mod h1:+0bw+k8FY5MU3tojFh33HeA5xMfGWjAUQpr+maW5Z3o=
 buf.build/go/protovalidate v1.1.3 h1:m2GVEgQWd7rk+vIoAZ+f0ygGjvQTuqPQapBBdcpWVPE=
 buf.build/go/protovalidate v1.1.3/go.mod h1:9XIuohWz+kj+9JVn3WQneHA5LZP50mjvneZMnbLkiIE=
 buf.build/go/spdx v0.2.0 h1:IItqM0/cMxvFJJumcBuP8NrsIzMs/UYjp/6WSpq8LTw=
@@ -44,5 +44,5 @@ google.golang.org/genproto/googleapis/rpc v0.0.0-20250811230008-5f3141c8851a h1:
 google.golang.org/genproto/googleapis/rpc v0.0.0-20250811230008-5f3141c8851a/go.mod h1:gw1tLEfykwDz2ET4a12jcXt4couGAm7IwsVaTy0Sflo=
 google.golang.org/protobuf v1.36.12 h1:pJOKDDOyeXErUroCihFAd5LQuwXBSpVnKGrj5o/fwxc=
 google.golang.org/protobuf v1.36.12/go.mod h1:HTf+CrKn2C3g5S8VImy6tdcUvCska2kB7j23XfzDpco=
-pluginrpc.com/pluginrpc v0.5.1-0.20260825152034-473fc805d0d1 h1:ijwXS090rZ+N13Rpwwz5Ku/+49aNUE73Jof1Pw/fCaw=
-pluginrpc.com/pluginrpc v0.5.1-0.20260825152034-473fc805d0d1/go.mod h1:ro2Em10qmKefBGOLc9HMAjRlJwJpfBS33pqfLtLj+JI=
+pluginrpc.com/pluginrpc v0.6.0 h1:Dx5r3y9Nbbt02NSm+bKHvs+WgXM34lalD5grkjd8sno=
+pluginrpc.com/pluginrpc v0.6.0/go.mod h1:9FPMdIy8nmkALE5eSe2ipE42G83WpZnA2+I7M7ADijY=
