@@ -65,12 +65,12 @@ func TestModuleName(t *testing.T) {
 			{
 				RuleID:       ruleID,
 				Message:      "buf.build/acme/weather",
-				FileLocation: &checktest.ExpectedFileLocation{FileName: "a.proto", EndLine: 8, EndColumn: 1},
+				FileLocation: &checktest.ExpectedFileLocation{FileName: "a.proto"},
 			},
 			{
 				RuleID:       ruleID,
 				Message:      "<none>",
-				FileLocation: &checktest.ExpectedFileLocation{FileName: "b.proto", EndLine: 4, EndColumn: 12},
+				FileLocation: &checktest.ExpectedFileLocation{FileName: "b.proto"},
 			},
 		},
 	}.Run(t)

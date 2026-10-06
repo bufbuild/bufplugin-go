@@ -54,8 +54,7 @@ func TestSimpleFailure(t *testing.T) {
 			{
 				RuleID: syntaxSpecifiedRuleID,
 				FileLocation: &checktest.ExpectedFileLocation{
-					FileName:  "simple.proto",
-					EndColumn: 15,
+					FileName: "simple.proto",
 				},
 			},
 		},

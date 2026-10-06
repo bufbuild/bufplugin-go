@@ -348,7 +348,12 @@ func getFileLocationForAddAnnotationOptions(
 //  1. an exact source location
 //  2. the first descendant source location
 //  3. the nearest ancestor source location
+//
+// An empty path refers to the whole file and has no source location.
 func nearestLocation(locations protoreflect.SourceLocations, path protoreflect.SourcePath) protoreflect.SourceLocation {
+	if len(path) == 0 {
+		return protoreflect.SourceLocation{}
+	}
 	if loc := locations.ByPath(path); len(loc.Path) > 0 {
 		return loc // exact match
 	}
