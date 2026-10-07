@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.36.12-20261002170247-538130002972.2
 	buf.build/go/protovalidate v1.1.3
-	buf.build/go/spdx v0.2.0
+	buf.build/go/spdx v0.3.0
 	github.com/bufbuild/protocompile v0.14.1
 	github.com/stretchr/testify v1.12.1
 	google.golang.org/protobuf v1.36.12
