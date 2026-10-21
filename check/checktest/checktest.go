@@ -336,10 +336,13 @@ func compile(
 	moduleName descriptor.ModuleName,
 ) ([]descriptor.FileDescriptor, error) {
 	dirPaths = fromSlashPaths(dirPaths)
-	filePaths = fromSlashPaths(filePaths)
+	// The compiler names each file by the path it is given, and .proto file
+	// names use forward slashes even on Windows.
+	toSlashFilePaths := make([]string, len(filePaths))
 	toSlashFilePathMap := make(map[string]struct{}, len(filePaths))
-	for _, filePath := range filePaths {
-		toSlashFilePathMap[filepath.ToSlash(filePath)] = struct{}{}
+	for i, filePath := range fromSlashPaths(filePaths) {
+		toSlashFilePaths[i] = filepath.ToSlash(filePath)
+		toSlashFilePathMap[toSlashFilePaths[i]] = struct{}{}
 	}
 
 	var warningErrorsWithPos []reporter.ErrorWithPos
@@ -360,7 +363,7 @@ func compile(
 		// This is what buf uses.
 		SourceInfoMode: protocompile.SourceInfoExtraOptionLocations,
 	}
-	files, err := compiler.Compile(ctx, filePaths...)
+	files, err := compiler.Compile(ctx, toSlashFilePaths...)
 	if err != nil {
 		return nil, err
 	}

@@ -60,3 +60,25 @@ func TestSimpleFailure(t *testing.T) {
 		},
 	}.Run(t)
 }
+
+func TestSubdirectoryFailure(t *testing.T) {
+	t.Parallel()
+
+	checktest.CheckTest{
+		Request: &checktest.RequestSpec{
+			Files: &checktest.ProtoFileSpec{
+				DirPaths:  []string{"testdata/subdirectory_failure"},
+				FilePaths: []string{"sub/simple.proto"},
+			},
+		},
+		Spec: spec,
+		ExpectedAnnotations: []checktest.ExpectedAnnotation{
+			{
+				RuleID: syntaxSpecifiedRuleID,
+				FileLocation: &checktest.ExpectedFileLocation{
+					FileName: "sub/simple.proto",
+				},
+			},
+		},
+	}.Run(t)
+}
