@@ -8,7 +8,7 @@ require (
 	buf.build/go/spdx v0.3.0
 	github.com/bufbuild/protocompile v0.14.2-0.20261020145055-56248e843b50
 	github.com/stretchr/testify v1.12.1
-	google.golang.org/protobuf v1.36.13-0.20261016172727-e9ee2a76ab8e
+	google.golang.org/protobuf v1.37.0-rc.1
 	pluginrpc.com/pluginrpc v0.6.0
 )
 

@@ -56,8 +56,8 @@ google.golang.org/genproto/googleapis/api v0.0.0-20250811230008-5f3141c8851a h1:
 google.golang.org/genproto/googleapis/api v0.0.0-20250811230008-5f3141c8851a/go.mod h1:y2yVLIE/CSMCPXaHnSKXxu1spLPnglFLegmgdY23uuE=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20250811230008-5f3141c8851a h1:tPE/Kp+x9dMSwUm/uM0JKK0IfdiJkwAbSMSeZBXXJXc=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20250811230008-5f3141c8851a/go.mod h1:gw1tLEfykwDz2ET4a12jcXt4couGAm7IwsVaTy0Sflo=
-google.golang.org/protobuf v1.36.13-0.20261016172727-e9ee2a76ab8e h1:TU4XCsANCrpOpeS6NA+LhCA6H12DfxF2gIcYBrWcdwc=
-google.golang.org/protobuf v1.36.13-0.20261016172727-e9ee2a76ab8e/go.mod h1:X7eSFOSeyjM8zqq7vd+xpgLluojDTuH3nwq1zr6OCKg=
+google.golang.org/protobuf v1.37.0-rc.1 h1:RQUh2I7V8DjoPJlj2K1BXNUKIOpK2ZdPRfG0HK766Yg=
+google.golang.org/protobuf v1.37.0-rc.1/go.mod h1:X7eSFOSeyjM8zqq7vd+xpgLluojDTuH3nwq1zr6OCKg=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 pluginrpc.com/pluginrpc v0.6.0 h1:Dx5r3y9Nbbt02NSm+bKHvs+WgXM34lalD5grkjd8sno=
