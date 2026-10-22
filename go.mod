@@ -1,28 +1,32 @@
 module buf.build/go/bufplugin
 
-go 1.26.0
+go 1.26.7
 
 require (
 	buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.36.12-20261002170247-538130002972.2
 	buf.build/go/protovalidate v1.1.3
 	buf.build/go/spdx v0.3.0
-	github.com/bufbuild/protocompile v0.14.1
+	github.com/bufbuild/protocompile v0.14.2-0.20261020145055-56248e843b50
 	github.com/stretchr/testify v1.12.1
-	google.golang.org/protobuf v1.36.12
+	google.golang.org/protobuf v1.37.0-rc.1
 	pluginrpc.com/pluginrpc v0.6.0
 )
 
 require (
+	buf.build/gen/go/bufbuild/protodescriptor/protocolbuffers/go v1.36.12-20250109164928-1da0de137947.1 // indirect
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260825204119-511051f7f437.1 // indirect
 	buf.build/gen/go/pluginrpc/pluginrpc/protocolbuffers/go v1.36.12-20241007202033-cf42259fcbfc.2 // indirect
 	cel.dev/expr v0.25.1 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/google/cel-go v0.29.0 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
+	github.com/petermattis/goid v0.0.0-20260716134002-a9b348f0a2b9 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
+	github.com/tidwall/btree v1.8.1 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/exp v0.0.0-20250813145105-42675adae3e6 // indirect
-	golang.org/x/sync v0.16.0 // indirect
+	golang.org/x/exp v0.0.0-20260709172345-9ea1abe57597 // indirect
+	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250811230008-5f3141c8851a // indirect

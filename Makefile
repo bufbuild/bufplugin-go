@@ -10,10 +10,10 @@ BIN := .tmp/bin
 export PATH := $(abspath $(BIN)):$(PATH)
 export GOBIN := $(abspath $(BIN))
 COPYRIGHT_YEARS := 2024-2025
-LICENSE_IGNORE := --ignore testdata/
+LICENSE_IGNORE := --ignore testdata/ --ignore .github/ --ignore .golangci.yml --ignore buf.gen.yaml
 
-BUF_VERSION := v1.67.0
-GOLANGCI_LINT_VERSION := v2.13.1
+BUF_VERSION := v1.75.0
+GOLANGCI_LINT_VERSION := v2.15.0
 #GO_GET_PKGS :=
 
 .PHONY: help
